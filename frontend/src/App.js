@@ -1,8 +1,9 @@
 import React from 'react';
 import './App.css';
+import { IndexPage } from './page';
 
 export const App = () => {
-  return <h1>Hi there</h1>;
+  return <IndexPage />;
 };
 
 export default App;
