@@ -18,6 +18,7 @@ out
 
 # IDE
 .idea
+*.iml
 
 # Gradle project-specific cache directory
 .gradle
