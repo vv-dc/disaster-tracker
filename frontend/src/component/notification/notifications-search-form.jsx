@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import styled from 'styled-components';
+import { BaseButton, FormInput } from '../styled/control';
 
 export const NotificationsSearchForm = () => {
   const [timeMin, setTimeMin] = useState('');
@@ -13,22 +15,50 @@ export const NotificationsSearchForm = () => {
   };
 
   return (
-    <div className="search-form-wrapper">
-      <form className="search-form" onSubmit={handleSearch}>
-        <input
+    <SearchFormWrapper>
+      <SearchForm className="search-form" onSubmit={handleSearch}>
+        <FormInput
           id="search-form__time-min"
           name="time-min"
           onChange={(e) => setTimeMin(e.target.value.trim())}
           value={timeMin}
+          placeholder="Min Date"
         />
-        <input
+        <FormInput
           id="search-form__time-max"
           name="time-max"
           onChange={(e) => setTimeMax(e.target.value.trim())}
           value={timeMax}
+          placeholder="Max Date"
         />
-        <button className="search-btn">Search</button>
-      </form>
-    </div>
+        <SearchButton>Search</SearchButton>
+      </SearchForm>
+    </SearchFormWrapper>
   );
 };
+
+const SearchFormWrapper = styled.div`
+  display: flex;
+  margin: 0 auto;
+  ${FormInput} {
+    width: 100px;
+    border: 1px solid var(--gray);
+  }
+  label {
+    margin-right: 6px;
+  }
+`;
+
+const SearchButton = styled(BaseButton)`
+  background-color: var(--gray);
+  color: var(--black);
+  padding: 15px 8px;
+  width: 100%;
+`;
+
+const SearchForm = styled.form`
+  display: flex;
+  justify-content: center;
+  gap: 10px 15px;
+  flex-wrap: wrap;
+`;
