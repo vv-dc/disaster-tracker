@@ -1,6 +1,11 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { BaseButton, FormInput } from '../styled/control';
+import {
+  BaseButton,
+  FormColumn,
+  FormInput,
+  FormLabel,
+} from '../styled/control';
 
 export const NotificationsSearchForm = () => {
   const [timeMin, setTimeMin] = useState('');
@@ -17,20 +22,28 @@ export const NotificationsSearchForm = () => {
   return (
     <SearchFormWrapper>
       <SearchForm className="search-form" onSubmit={handleSearch}>
-        <FormInput
-          id="search-form__time-min"
-          name="time-min"
-          onChange={(e) => setTimeMin(e.target.value.trim())}
-          value={timeMin}
-          placeholder="Min Date"
-        />
-        <FormInput
-          id="search-form__time-max"
-          name="time-max"
-          onChange={(e) => setTimeMax(e.target.value.trim())}
-          value={timeMax}
-          placeholder="Max Date"
-        />
+        <FormColumnsWrapper>
+          <FormColumn>
+            <FormLabel htmlFor="search-form__time-min">Min</FormLabel>
+            <FormInput
+              id="search-form__time-min"
+              name="time-min"
+              type="date"
+              onChange={(e) => setTimeMin(e.target.value.trim())}
+              value={timeMin}
+            />
+          </FormColumn>
+          <FormColumn>
+            <FormLabel htmlFor="search-form__time-max">Max</FormLabel>
+            <FormInput
+              id="search-form__time-max"
+              name="time-max"
+              type="date"
+              onChange={(e) => setTimeMax(e.target.value.trim())}
+              value={timeMax}
+            />
+          </FormColumn>
+        </FormColumnsWrapper>
         <SearchButton>Search</SearchButton>
       </SearchForm>
     </SearchFormWrapper>
@@ -38,14 +51,20 @@ export const NotificationsSearchForm = () => {
 };
 
 const SearchFormWrapper = styled.div`
-  display: flex;
   margin: 0 auto;
   ${FormInput} {
-    width: 100px;
-    border: 1px solid var(--gray);
+    width: 130px;
   }
-  label {
+  ${FormLabel} {
+    display: block;
     margin-right: 6px;
+  }
+`;
+
+const FormColumnsWrapper = styled.div`
+  display: flex;
+  div:first-of-type {
+    margin-right: 20px;
   }
 `;
 

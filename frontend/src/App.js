@@ -6,8 +6,8 @@ const GlobalStyles = createGlobalStyle`
   :root {
     --black: #080c0b;
     --white: #f1f0ea;
-    --gray: #d9d9d9;
-    --gray-dark: #a3a3a3;
+    --gray: #c8c8c8;
+    --gray-dark: #18191a;
   }
   body {
     background-color: var(--white);

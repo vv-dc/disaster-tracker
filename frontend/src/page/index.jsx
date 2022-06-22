@@ -16,12 +16,13 @@ export const IndexPage = () => {
 
 const IndexPageWrapper = styled.div`
   display: flex;
-  height: calc(100vh - 50px);
+  height: 100vh;
   justify-content: space-between;
   padding: 15px;
   gap: 0 15px;
 `;
 
 const CalendarBarWrapper = styled.div`
-  background-color: green;
+  padding: 30px 15px;
+  background-color: var(--gray);
 `;

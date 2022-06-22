@@ -33,6 +33,7 @@ const NotificationTextAreaWrapper = styled.div`
   height: 100%;
   textarea {
     display: block;
+    resize: none;
     width: inherit;
     box-sizing: border-box;
     height: 100%;
