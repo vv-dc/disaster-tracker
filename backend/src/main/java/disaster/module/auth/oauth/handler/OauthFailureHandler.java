@@ -13,7 +13,6 @@ import reactor.core.publisher.Mono;
 
 import java.net.URI;
 
-@Slf4j
 public class OauthFailureHandler extends RedirectServerAuthenticationFailureHandler {
 
     private final String defaultRedirectUrl;
@@ -33,7 +32,6 @@ public class OauthFailureHandler extends RedirectServerAuthenticationFailureHand
         String redirectUrl = (state.getFailureRedirectUrl() != null
             ? state.getFailureRedirectUrl()
             : defaultRedirectUrl) + "?reason=" + exception.getMessage();
-        log.info("Redirecting to " + redirectUrl);
 
         var location = URI.create(redirectUrl);
         return redirectStrategy.sendRedirect(exchange, location);

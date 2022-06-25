@@ -15,7 +15,6 @@ import reactor.core.publisher.Mono;
 
 import java.net.URI;
 
-@Slf4j
 public class OauthSuccessHandler extends RedirectServerAuthenticationSuccessHandler {
 
     private final String defaultRedirectUrl;
@@ -28,19 +27,22 @@ public class OauthSuccessHandler extends RedirectServerAuthenticationSuccessHand
     @SneakyThrows
     @Override
     public Mono<Void> onAuthenticationSuccess(WebFilterExchange webFilterExchange, Authentication authentication) {
-        OAuth2AuthenticationToken authToken = (OAuth2AuthenticationToken) authentication;
-        CustomOauthUser principal = (CustomOauthUser) authToken.getPrincipal();
+        CustomOauthUser principal = (CustomOauthUser) authentication.getPrincipal();
 
         ServerWebExchange exchange = webFilterExchange.getExchange();
         OauthRequestState state = OauthRequestStateUtils.getRequestStateFromRequest(exchange);
         String redirectUrl = state.getSuccessRedirectUrl() != null
-            ? state.getSuccessRedirectUrl() + "?accessToken" + principal.getAccessToken()
+            ? buildSuccessRedirectUrl(state.getSuccessRedirectUrl(), principal)
             : defaultRedirectUrl;
-
-        log.info("Redirecting to " + state.getFailureRedirectUrl());
 
         var redirectStrategy = new DefaultServerRedirectStrategy();
         URI location = URI.create(redirectUrl);
         return redirectStrategy.sendRedirect(exchange, location);
+    }
+
+    private String buildSuccessRedirectUrl(String baseUrl, CustomOauthUser principal) {
+        return baseUrl
+            + "?accessToken=" + principal.getAccessToken()
+            + "&email=" + principal.getEmail();
     }
 }

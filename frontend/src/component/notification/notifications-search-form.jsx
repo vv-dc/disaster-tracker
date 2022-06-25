@@ -10,12 +10,14 @@ import {
 export const NotificationsSearchForm = () => {
   const [timeMin, setTimeMin] = useState('');
   const [timeMax, setTimeMax] = useState('');
+  const [calendarId /*setCalendarId*/] = useState('');
 
   const handleSearch = (event) => {
     event.preventDefault();
     console.dir({
       timeMin,
       timeMax,
+      calendarId,
     });
   };
 
@@ -23,6 +25,18 @@ export const NotificationsSearchForm = () => {
     <SearchFormWrapper>
       <SearchForm className="search-form" onSubmit={handleSearch}>
         <FormColumnsWrapper>
+          <FormColumn>
+            <FormLabel htmlFor="search-form__calendar-id">
+              Calendar ID
+            </FormLabel>
+            <FormInput
+              id="search-form__calendar-id"
+              name="time-min"
+              type="text"
+              onChange={(e) => setTimeMin(e.target.value.trim())}
+              value={timeMin}
+            />
+          </FormColumn>
           <FormColumn>
             <FormLabel htmlFor="search-form__time-min">Min</FormLabel>
             <FormInput
@@ -63,9 +77,7 @@ const SearchFormWrapper = styled.div`
 
 const FormColumnsWrapper = styled.div`
   display: flex;
-  div:first-of-type {
-    margin-right: 20px;
-  }
+  gap: 0 20px;
 `;
 
 const SearchButton = styled(BaseButton)`
