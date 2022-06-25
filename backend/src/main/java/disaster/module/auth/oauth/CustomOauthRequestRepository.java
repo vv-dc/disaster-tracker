@@ -1,39 +1,33 @@
 package disaster.module.auth.oauth;
 
 import disaster.module.auth.oauth.state.OauthRequestStateUtils;
-import org.springframework.security.oauth2.client.web.AuthorizationRequestRepository;
-import org.springframework.security.oauth2.client.web.HttpSessionOAuth2AuthorizationRequestRepository;
+import org.springframework.security.oauth2.client.web.server.ServerAuthorizationRequestRepository;
+import org.springframework.security.oauth2.client.web.server.WebSessionOAuth2ServerAuthorizationRequestRepository;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
+import org.springframework.web.server.ServerWebExchange;
+import reactor.core.publisher.Mono;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+public class CustomOauthRequestRepository implements ServerAuthorizationRequestRepository<OAuth2AuthorizationRequest> {
 
-public class CustomOauthRequestRepository implements AuthorizationRequestRepository<OAuth2AuthorizationRequest> {
-
-    private final AuthorizationRequestRepository<OAuth2AuthorizationRequest> internalRepository;
+    private final ServerAuthorizationRequestRepository<OAuth2AuthorizationRequest> internalRepository;
 
     public CustomOauthRequestRepository() {
-        this.internalRepository = new HttpSessionOAuth2AuthorizationRequestRepository();
+        this.internalRepository = new WebSessionOAuth2ServerAuthorizationRequestRepository();
     }
 
-    public OAuth2AuthorizationRequest loadAuthorizationRequest(HttpServletRequest request) {
+    public Mono<OAuth2AuthorizationRequest> loadAuthorizationRequest(ServerWebExchange request) {
         return internalRepository.loadAuthorizationRequest(request);
     }
 
-    public void saveAuthorizationRequest(OAuth2AuthorizationRequest authorizationRequest, HttpServletRequest request, HttpServletResponse response) {
-        internalRepository.saveAuthorizationRequest(authorizationRequest, request, response);
+    public Mono<Void> saveAuthorizationRequest(OAuth2AuthorizationRequest authorizationRequest, ServerWebExchange exchange) {
+        return internalRepository.saveAuthorizationRequest(authorizationRequest, exchange);
     }
 
-    @Override
-    public OAuth2AuthorizationRequest removeAuthorizationRequest(HttpServletRequest request) {
-        throw new RuntimeException("Deprecated");
-    }
-
-    public OAuth2AuthorizationRequest removeAuthorizationRequest(HttpServletRequest request, HttpServletResponse response) {
-        var context = internalRepository.removeAuthorizationRequest(request, response);
-        if (context != null) {
-            OauthRequestStateUtils.setOauthStateToRequest(request, context);
-        }
-        return context;
+    public Mono<OAuth2AuthorizationRequest> removeAuthorizationRequest(ServerWebExchange exchange) {
+        return internalRepository.removeAuthorizationRequest(exchange)
+            .map((context) -> {
+                OauthRequestStateUtils.setOauthStateToRequest(exchange, context);
+                return context;
+            });
     }
 }

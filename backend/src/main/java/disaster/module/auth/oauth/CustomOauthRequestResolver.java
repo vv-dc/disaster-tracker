@@ -1,41 +1,39 @@
 package disaster.module.auth.oauth;
 
 import disaster.module.auth.oauth.state.OauthRequestStateUtils;
-import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
-import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
-import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestResolver;
+import org.springframework.security.oauth2.client.registration.ReactiveClientRegistrationRepository;
+import org.springframework.security.oauth2.client.web.server.DefaultServerOAuth2AuthorizationRequestResolver;
+import org.springframework.security.oauth2.client.web.server.ServerOAuth2AuthorizationRequestResolver;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
+import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
+import org.springframework.web.server.ServerWebExchange;
+import reactor.core.publisher.Mono;
 
-import javax.servlet.http.HttpServletRequest;
+public class CustomOauthRequestResolver implements ServerOAuth2AuthorizationRequestResolver {
 
-public class CustomOauthRequestResolver implements OAuth2AuthorizationRequestResolver {
+    private final ServerOAuth2AuthorizationRequestResolver internalResolver;
 
-    private final OAuth2AuthorizationRequestResolver internalResolver;
-
-    public CustomOauthRequestResolver(ClientRegistrationRepository repository, String resolveUrl) {
-        this.internalResolver = new DefaultOAuth2AuthorizationRequestResolver(repository, resolveUrl);
+    public CustomOauthRequestResolver(ReactiveClientRegistrationRepository repository, String resolveUrl) {
+        this.internalResolver = new DefaultServerOAuth2AuthorizationRequestResolver(
+            repository,
+            ServerWebExchangeMatchers.pathMatchers(resolveUrl)
+        );
     }
 
     @Override
-    public OAuth2AuthorizationRequest resolve(HttpServletRequest request) {
-        OAuth2AuthorizationRequest context = internalResolver.resolve(request);
-        if (context == null) {
-            return null;
-        }
-        return decorateContext(request, context);
+    public Mono<OAuth2AuthorizationRequest> resolve(ServerWebExchange exchange) {
+        return internalResolver.resolve(exchange)
+            .map((context) -> decorateContext(exchange, context));
     }
 
     @Override
-    public OAuth2AuthorizationRequest resolve(HttpServletRequest request, String registrationId) {
-        OAuth2AuthorizationRequest context = internalResolver.resolve(request, registrationId);
-        if (context == null) {
-            return null;
-        }
-        return decorateContext(request, context);
+    public Mono<OAuth2AuthorizationRequest> resolve(ServerWebExchange exchange, String registrationId) {
+        return internalResolver.resolve(exchange, registrationId)
+            .map((context) -> decorateContext(exchange, context));
     }
 
-    private OAuth2AuthorizationRequest decorateContext(HttpServletRequest request, OAuth2AuthorizationRequest context) {
-        var additionalParams = OauthRequestStateUtils.buildAdditionalParamsFromRequest(request, context);
+    private OAuth2AuthorizationRequest decorateContext(ServerWebExchange exchange, OAuth2AuthorizationRequest context) {
+        var additionalParams = OauthRequestStateUtils.buildAdditionalParamsFromRequest(exchange, context);
         return OAuth2AuthorizationRequest
             .from(context)
             .additionalParameters(additionalParams)

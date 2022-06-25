@@ -3,24 +3,44 @@ package disaster.module.auth.oauth.handler;
 import disaster.module.auth.oauth.CustomOauthUser;
 import disaster.module.auth.oauth.state.OauthRequestState;
 import disaster.module.auth.oauth.state.OauthRequestStateUtils;
-import org.springframework.security.core.context.SecurityContextHolder;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
-import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
+import org.springframework.security.web.server.DefaultServerRedirectStrategy;
+import org.springframework.security.web.server.WebFilterExchange;
+import org.springframework.security.web.server.authentication.RedirectServerAuthenticationSuccessHandler;
+import org.springframework.web.server.ServerWebExchange;
+import reactor.core.publisher.Mono;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import java.net.URI;
 
-public class OauthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
+@Slf4j
+public class OauthSuccessHandler extends RedirectServerAuthenticationSuccessHandler {
 
-    public OauthSuccessHandler() {
-        super("/error");
+    private final String defaultRedirectUrl;
+
+    public OauthSuccessHandler(String defaultRedirectUrl) {
+        super(defaultRedirectUrl);
+        this.defaultRedirectUrl = defaultRedirectUrl;
     }
 
+    @SneakyThrows
     @Override
-    protected String determineTargetUrl(HttpServletRequest request, HttpServletResponse response) {
-        OAuth2AuthenticationToken authToken = (OAuth2AuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
+    public Mono<Void> onAuthenticationSuccess(WebFilterExchange webFilterExchange, Authentication authentication) {
+        OAuth2AuthenticationToken authToken = (OAuth2AuthenticationToken) authentication;
         CustomOauthUser principal = (CustomOauthUser) authToken.getPrincipal();
-        OauthRequestState state = OauthRequestStateUtils.getRequestStateFromRequest(request);
-        return state.getSuccessRedirectUrl() + "?accessToken" + principal.getAccessToken();
+
+        ServerWebExchange exchange = webFilterExchange.getExchange();
+        OauthRequestState state = OauthRequestStateUtils.getRequestStateFromRequest(exchange);
+        String redirectUrl = state.getSuccessRedirectUrl() != null
+            ? state.getSuccessRedirectUrl() + "?accessToken" + principal.getAccessToken()
+            : defaultRedirectUrl;
+
+        log.info("Redirecting to " + state.getFailureRedirectUrl());
+
+        var redirectStrategy = new DefaultServerRedirectStrategy();
+        URI location = URI.create(redirectUrl);
+        return redirectStrategy.sendRedirect(exchange, location);
     }
 }

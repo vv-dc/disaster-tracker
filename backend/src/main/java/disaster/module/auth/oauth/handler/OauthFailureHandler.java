@@ -2,23 +2,40 @@ package disaster.module.auth.oauth.handler;
 
 import disaster.module.auth.oauth.state.OauthRequestState;
 import disaster.module.auth.oauth.state.OauthRequestStateUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
+import org.springframework.security.web.server.DefaultServerRedirectStrategy;
+import org.springframework.security.web.server.ServerRedirectStrategy;
+import org.springframework.security.web.server.WebFilterExchange;
+import org.springframework.security.web.server.authentication.RedirectServerAuthenticationFailureHandler;
+import org.springframework.web.server.ServerWebExchange;
+import reactor.core.publisher.Mono;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
+import java.net.URI;
 
-public class OauthFailureHandler extends SimpleUrlAuthenticationFailureHandler {
+@Slf4j
+public class OauthFailureHandler extends RedirectServerAuthenticationFailureHandler {
 
-    public OauthFailureHandler() {
-        super("/error");
+    private final String defaultRedirectUrl;
+    private final ServerRedirectStrategy redirectStrategy;
+
+    public OauthFailureHandler(String defaultRedirectUrl) {
+        super(defaultRedirectUrl);
+        this.defaultRedirectUrl = defaultRedirectUrl;
+        this.redirectStrategy = new DefaultServerRedirectStrategy();
     }
 
     @Override
-    public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException {
-        OauthRequestState state = OauthRequestStateUtils.getRequestStateFromRequest(request);
-        String redirectUrl = state.getFailureRedirectUrl();
-        super.getRedirectStrategy().sendRedirect(request, response, redirectUrl);
+    public Mono<Void> onAuthenticationFailure(WebFilterExchange webFilterExchange, AuthenticationException exception) {
+        ServerWebExchange exchange = webFilterExchange.getExchange();
+        OauthRequestState state = OauthRequestStateUtils.getRequestStateFromRequest(exchange);
+
+        String redirectUrl = (state.getFailureRedirectUrl() != null
+            ? state.getFailureRedirectUrl()
+            : defaultRedirectUrl) + "?reason=" + exception.getMessage();
+        log.info("Redirecting to " + redirectUrl);
+
+        var location = URI.create(redirectUrl);
+        return redirectStrategy.sendRedirect(exchange, location);
     }
 }

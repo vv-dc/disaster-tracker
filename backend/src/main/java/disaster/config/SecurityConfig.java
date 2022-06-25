@@ -1,6 +1,8 @@
 package disaster.config;
 
-import disaster.module.auth.oauth.*;
+import disaster.module.auth.oauth.CustomOauthRequestRepository;
+import disaster.module.auth.oauth.CustomOauthRequestResolver;
+import disaster.module.auth.oauth.CustomOauthUserService;
 import disaster.module.auth.oauth.handler.OauthFailureHandler;
 import disaster.module.auth.oauth.handler.OauthSuccessHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,24 +12,27 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
+import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
-import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
-import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository;
-import org.springframework.security.oauth2.client.web.HttpSessionOAuth2AuthorizedClientRepository;
-import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestResolver;
-import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
-import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.oauth2.client.registration.InMemoryReactiveClientRegistrationRepository;
+import org.springframework.security.oauth2.client.registration.ReactiveClientRegistrationRepository;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
+import org.springframework.security.oauth2.client.userinfo.ReactiveOAuth2UserService;
+import org.springframework.security.oauth2.client.web.server.ServerOAuth2AuthorizationRequestResolver;
+import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.web.server.SecurityWebFilterChain;
+import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Configuration
-@EnableWebSecurity
+@EnableWebFluxSecurity
 @PropertySource("classpath:application-oauth2.properties")
 @EnableConfigurationProperties(OAuth2ClientProperties.class)
 public class SecurityConfig {
+
     private final OAuth2ClientProperties clientProperties;
 
     @Autowired
@@ -36,43 +41,39 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityWebFilterChain filterChain(ServerHttpSecurity http) {
         http.cors().disable();
         configureOauth(http);
         return http.build();
     }
 
-    public void configureOauth(HttpSecurity http) throws Exception {
+    public void configureOauth(ServerHttpSecurity http) {
         var registrationRepository = clientRegistrationRepository(clientProperties);
         var requestResolver = oauthRequestResolver(registrationRepository);
-        var clientRepository = authorizedClientRepository();
 
         http.oauth2Login()
-            .authorizationEndpoint()
             .authorizationRequestResolver(requestResolver)
             .authorizationRequestRepository(new CustomOauthRequestRepository())
-            .and()
             .clientRegistrationRepository(registrationRepository)
-            .authorizedClientRepository(clientRepository)
-            .loginProcessingUrl("/auth/oauth/login/*")
-            .successHandler(new OauthSuccessHandler())
-            .failureHandler(new OauthFailureHandler())
-            .userInfoEndpoint()
-            .userService(new CustomOauthUserService());
+            .authenticationMatcher(ServerWebExchangeMatchers.pathMatchers("/auth/oauth/login/{registrationId}"))
+            .authenticationSuccessHandler(new OauthSuccessHandler("/error"))
+            .authenticationFailureHandler(new OauthFailureHandler("/error"));
+        // NOTE: useService can be only provided via Bean
     }
 
-    public OAuth2AuthorizedClientRepository authorizedClientRepository() {
-        return new HttpSessionOAuth2AuthorizedClientRepository();
-    }
-
-    public ClientRegistrationRepository clientRegistrationRepository(OAuth2ClientProperties oauthClientProperties) {
+    private ReactiveClientRegistrationRepository clientRegistrationRepository(OAuth2ClientProperties oauthClientProperties) {
         var registrationsMap = OAuth2ClientPropertiesRegistrationAdapter.getClientRegistrations(oauthClientProperties);
         List<ClientRegistration> registrations = new ArrayList<>(registrationsMap.values());
-        return new InMemoryClientRegistrationRepository(registrations);
+        return new InMemoryReactiveClientRegistrationRepository(registrations);
     }
 
-    public OAuth2AuthorizationRequestResolver oauthRequestResolver(ClientRegistrationRepository clientRepository) {
-        String resolverUrl = "/auth/oauth/init";
+    private ServerOAuth2AuthorizationRequestResolver oauthRequestResolver(ReactiveClientRegistrationRepository clientRepository) {
+        String resolverUrl = "/auth/oauth/init/{registrationId}";
         return new CustomOauthRequestResolver(clientRepository, resolverUrl);
+    }
+
+    @Bean
+    ReactiveOAuth2UserService<OAuth2UserRequest, OAuth2User> userService() {
+        return new CustomOauthUserService();
     }
 }
