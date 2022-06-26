@@ -4,9 +4,10 @@ import disaster.config.CalendarConfig;
 import disaster.model.calendar.CalendarEvent;
 import disaster.model.calendar.CalendarSearchBounds;
 import disaster.model.calendar.CalendarSearchDto;
-import disaster.model.calendar.error.CalendarGenericError;
+import disaster.model.calendar.error.CalendarGenericHttpError;
 import disaster.model.calendar.google.GoogleApiErrorWrapper;
 import disaster.model.calendar.google.GoogleCalendarEventsList;
+import disaster.util.DateTimeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -50,8 +51,9 @@ public class GoogleCalendarApiClient {
         String baseUrl = buildBaseApiUrl(calendarId);
         return UriComponentsBuilder
             .fromHttpUrl(baseUrl)
-            .queryParam("timeMin", bounds.getTimeMin())
-            .queryParam("timeMax", bounds.getTimeMax())
+            .queryParam("timeMin", DateTimeUtils.formatToISODateTime(bounds.getTimeMin()))
+            .queryParam("timeMax", DateTimeUtils.formatToISODateTime(bounds.getTimeMax()))
+            .queryParam("timeZone", bounds.getTimeMax().getZone())
             .build()
             .toUri();
     }
@@ -64,9 +66,9 @@ public class GoogleCalendarApiClient {
         );
     }
 
-    private Mono<CalendarGenericError> handleApiError(ClientResponse response) {
+    private Mono<CalendarGenericHttpError> handleApiError(ClientResponse response) {
         return response.bodyToMono(GoogleApiErrorWrapper.class)
-            .map((wrapper) -> new CalendarGenericError(
+            .map((wrapper) -> new CalendarGenericHttpError(
                 wrapper.getError().getCode(),
                 wrapper.getError().getStatus(),
                 wrapper.getError().getMessage()

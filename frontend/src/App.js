@@ -8,12 +8,14 @@ const GlobalStyles = createGlobalStyle`
     --white: #f1f0ea;
     --gray: #c8c8c8;
     --gray-dark: #18191a;
+    --error-red: #d56a6f;
   }
+
   body {
     background-color: var(--white);
     color: var(--black);
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 
-      'Roboto', 'Cantarell', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    'Roboto', 'Cantarell', sans-serif;
   }
 `;
 

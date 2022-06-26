@@ -1,10 +1,23 @@
+import { config } from '../config/config';
 import { getAccessToken } from './auth.service';
-import { getRequest } from './http.service';
+import { buildQueryParams } from '../lib/http.utils';
 
-export const getNotifications = async ({ calendarId, timeMin, timeMax }) => {
+export const getNotificationsStream = ({ calendarId, timeMin, timeMax }) => {
   const accessToken = getAccessToken();
-  const url = 'http://localhost:8080/api/events/google';
-  const auth = `Bearer ${accessToken}`;
-  const query = { calendarId, timeMin, timeMax };
-  return getRequest(url, query, { Authorization: auth });
+  const apiUrl = buildNotificationsUrl({
+    calendarId,
+    timeMin,
+    timeMax,
+    accessToken,
+  });
+  return new EventSource(apiUrl);
+};
+
+export const buildNotificationsUrl = (query) => {
+  const queryString = buildQueryParams(query);
+  return `${config.api.notification.host}/api/events?${queryString}`;
+};
+
+export const parseNotification = (message) => {
+  return JSON.parse(message.data);
 };

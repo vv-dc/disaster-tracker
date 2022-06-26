@@ -6,7 +6,6 @@ import {
   FormInput,
   FormLabel,
 } from '../styled/control';
-import { getNotifications } from '../../service/notification.service';
 import { formatKebabWithTZ } from '../../lib/date.utils';
 
 export const NotificationsSearchForm = ({ formCallback }) => {
@@ -17,8 +16,7 @@ export const NotificationsSearchForm = ({ formCallback }) => {
   const handleSearch = async (event) => {
     event.preventDefault();
     const searchDto = prepareSearchDto();
-    const events = await getNotifications(searchDto);
-    await formCallback(events);
+    formCallback(searchDto);
   };
 
   const prepareSearchDto = () => {
@@ -88,9 +86,10 @@ const SearchFormWrapper = styled.div`
 
 const FormColumnsWrapper = styled.div`
   display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 0 20px;
-  #search-form__time-min,
-  #search-form__time-max {
+  ${FormInput} {
     width: 200px;
   }
 `;

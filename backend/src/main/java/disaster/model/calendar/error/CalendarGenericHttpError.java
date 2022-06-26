@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @AllArgsConstructor
 @Getter
-public class CalendarGenericError extends RuntimeException {
+public class CalendarGenericHttpError extends RuntimeException {
 
     private int code;
     private String status;
