@@ -1,5 +1,8 @@
 package disaster.model.geocoding;
 
+import lombok.Data;
+
+@Data
 public abstract class GeocodingResult {
 
     public static GeocodingResult error(String errorMessage) {

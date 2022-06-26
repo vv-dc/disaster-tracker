@@ -4,7 +4,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import disaster.model.disasters.HazardEvent;
+import disaster.model.disasters.HazardEventApiDto;
+import disaster.model.geocoding.SuccessGeocodingResult;
 import disaster.model.mappers.DisasterAlertHazardEventDeserializer;
+import disaster.service.geocoding.OpenStreetMapGeolocationService;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -21,11 +24,13 @@ public class DisasterAlertClient {
             .build();
 
     private final XmlMapper mapper;
+    private final OpenStreetMapGeolocationService geolocationService;
 
-    public DisasterAlertClient() {
+    public DisasterAlertClient(OpenStreetMapGeolocationService geolocationService) {
+        this.geolocationService = geolocationService;
         mapper = new XmlMapper();
         SimpleModule module = new SimpleModule();
-        module.addDeserializer(HazardEvent.class, new DisasterAlertHazardEventDeserializer());
+        module.addDeserializer(HazardEventApiDto.class, new DisasterAlertHazardEventDeserializer());
         mapper.registerModule(module);
     }
 
@@ -36,13 +41,20 @@ public class DisasterAlertClient {
                 .bodyToMono(String.class)
                 .flatMapMany(body -> {
                             try {
-                                return Flux.fromArray(mapper.readValue(body, HazardEvent[].class)
+                                return Flux.fromArray(mapper.readValue(body, HazardEventApiDto[].class)
                                 );
                             } catch (JsonProcessingException e) {
                                 return Flux.error(e);
                             }
                         }
+                )
+                .concatMap(dto -> geolocationService
+                        .locate(dto.getLatitude(), dto.getLongitude())
+                        .handle((location, s) -> {
+                            if (location instanceof SuccessGeocodingResult) {
+                                s.next(HazardEvent.fromDto(dto, location));
+                            }
+                        })
                 );
     }
-
 }

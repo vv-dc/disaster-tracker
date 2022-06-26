@@ -5,10 +5,11 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import disaster.model.disasters.HazardEvent;
+import disaster.model.disasters.HazardEventApiDto;
 
 import java.io.IOException;
 
-public class DisasterAlertHazardEventDeserializer extends StdDeserializer<HazardEvent> {
+public class DisasterAlertHazardEventDeserializer extends StdDeserializer<HazardEventApiDto> {
 
     public DisasterAlertHazardEventDeserializer() {
         this(null);
@@ -19,7 +20,7 @@ public class DisasterAlertHazardEventDeserializer extends StdDeserializer<Hazard
     }
 
     @Override
-    public HazardEvent deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
+    public HazardEventApiDto deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
         JsonNode node = p.getCodec().readTree(p);
 
         var startDate = node.get("start_Date").asText();
@@ -27,7 +28,7 @@ public class DisasterAlertHazardEventDeserializer extends StdDeserializer<Hazard
         var longitude = node.get("longitude").asDouble();
         var latitude = node.get("latitude").asDouble();
 
-        var hazardEvent = new HazardEvent();
+        var hazardEvent = new HazardEventApiDto();
         hazardEvent.setHazardType(type);
         hazardEvent.setStartTime(startDate);
         hazardEvent.setLongitude(longitude);

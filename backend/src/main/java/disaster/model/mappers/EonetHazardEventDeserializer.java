@@ -4,12 +4,11 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
-import disaster.model.disasters.HazardEvent;
+import disaster.model.disasters.HazardEventApiDto;
 
 import java.io.IOException;
-import java.time.LocalTime;
 
-public class EonetHazardEventDeserializer extends StdDeserializer<HazardEvent> {
+public class EonetHazardEventDeserializer extends StdDeserializer<HazardEventApiDto> {
 
     public EonetHazardEventDeserializer() {
         this(null);
@@ -20,7 +19,7 @@ public class EonetHazardEventDeserializer extends StdDeserializer<HazardEvent> {
     }
 
     @Override
-    public HazardEvent deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
+    public HazardEventApiDto deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
         JsonNode node = p.getCodec().readTree(p);
 
         var startDate = node.get("start_Date").asText();
@@ -29,7 +28,7 @@ public class EonetHazardEventDeserializer extends StdDeserializer<HazardEvent> {
         var longitude = geometryNode.get("longitude").asDouble();
         var latitude = geometryNode.get("latitude").asDouble();
 
-        var hazardEvent = new HazardEvent();
+        var hazardEvent = new HazardEventApiDto();
         hazardEvent.setHazardType(type);
         hazardEvent.setStartTime(startDate);
         hazardEvent.setLongitude(longitude);
