@@ -2,38 +2,50 @@ package disaster.service.eonet;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import disaster.config.DisasterApiConfig;
 import disaster.model.disasters.HazardEvent;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Flux;
+
+import java.net.URI;
 
 @Service
 public class EonetClient {
 
-    public static final String API_URL = "https://eonet.gsfc.nasa.gov/api/v3";
-    public static final WebClient webclient = WebClient.create(API_URL);
+    public static final WebClient webclient = WebClient.create();
     private final ObjectMapper mapper = new ObjectMapper();
+    private final DisasterApiConfig disasterApiConfig;
+
+    public EonetClient(DisasterApiConfig disasterApiConfig) {
+
+        this.disasterApiConfig = disasterApiConfig;
+    }
 
     public Flux<HazardEvent> getEvents() {
+        var uri = buildUri("open");
         return webclient.get()
-                .uri(uriBuilder -> uriBuilder
-                        .path("/events")
-                        .queryParam("status", "open")
-                        .build()
-                )
-                .exchangeToFlux(response ->
-                        response
-                                .bodyToFlux(String.class)
-                                .concatMap(
-                                        body -> {
-                                            try {
-                                                return Flux.fromArray(mapper.readValue(body, HazardEvent[].class)
-                                                );
-                                            } catch (JsonProcessingException e) {
-                                                return Flux.error(e);
-                                            }
-                                        }
-                                )
+                .uri(uri)
+                .retrieve()
+                .bodyToMono(String.class)
+                .flatMapMany(
+                        body -> {
+                            try {
+                                return Flux.fromArray(mapper.readValue(body, HazardEvent[].class)
+                                );
+                            } catch (JsonProcessingException e) {
+                                return Flux.error(e);
+                            }
+                        }
                 );
+    }
+
+    private URI buildUri(String status) {
+        return UriComponentsBuilder
+                .fromHttpUrl(disasterApiConfig.getEonetApiUrl())
+                .queryParam("status", status)
+                .build()
+                .toUri();
     }
 }

@@ -1,8 +1,9 @@
-package disaster.service.disaster_alert;
+package disaster.service.disasteralert;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import disaster.config.DisasterApiConfig;
 import disaster.model.disasters.HazardEvent;
 import disaster.model.disasters.HazardEventApiDto;
 import disaster.model.geocoding.SuccessGeocodingResult;
@@ -11,23 +12,26 @@ import disaster.service.geocoding.OpenStreetMapGeolocationService;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Flux;
+
+import java.net.URI;
 
 @Service
 public class DisasterAlertClient {
 
-    public static final String API_URL = "https://hpxml.pdc.org";
-
     public static final WebClient webclient = WebClient.builder()
-            .baseUrl(API_URL)
             .defaultHeader("Accept", MediaType.APPLICATION_XML_VALUE)
             .build();
 
     private final XmlMapper mapper;
     private final OpenStreetMapGeolocationService geolocationService;
+    private final DisasterApiConfig disasterApiConfig;
 
-    public DisasterAlertClient(OpenStreetMapGeolocationService geolocationService) {
+    public DisasterAlertClient(OpenStreetMapGeolocationService geolocationService, DisasterApiConfig disasterApiConfig) {
         this.geolocationService = geolocationService;
+        this.disasterApiConfig = disasterApiConfig;
+
         mapper = new XmlMapper();
         SimpleModule module = new SimpleModule();
         module.addDeserializer(HazardEventApiDto.class, new DisasterAlertHazardEventDeserializer());
@@ -35,8 +39,9 @@ public class DisasterAlertClient {
     }
 
     public Flux<HazardEvent> getEvents() {
+        var uri = buildUri();
         return webclient.get()
-                .uri("/public.xml")
+                .uri(uri)
                 .retrieve()
                 .bodyToMono(String.class)
                 .flatMapMany(body -> {
@@ -56,5 +61,12 @@ public class DisasterAlertClient {
                             }
                         })
                 );
+    }
+
+    private URI buildUri() {
+        return UriComponentsBuilder
+                .fromHttpUrl(disasterApiConfig.getDisasterAlertApiUrl())
+                .build()
+                .toUri();
     }
 }

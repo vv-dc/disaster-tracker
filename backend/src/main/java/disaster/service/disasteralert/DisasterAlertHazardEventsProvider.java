@@ -1,4 +1,4 @@
-package disaster.service.disaster_alert;
+package disaster.service.disasteralert;
 
 import disaster.model.disasters.HazardEvent;
 import org.springframework.beans.factory.annotation.Autowired;

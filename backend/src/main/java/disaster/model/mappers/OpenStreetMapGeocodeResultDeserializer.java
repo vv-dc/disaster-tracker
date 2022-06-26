@@ -36,9 +36,10 @@ public class OpenStreetMapGeocodeResultDeserializer extends StdDeserializer<Geoc
         if (!villageNode.isMissingNode()) {
             name = villageNode.textValue();
         }
-        //var state = addressNode.get("state").textValue();
-        var country = addressNode.get("country").textValue();
-        return GeocodingResult.success(name, null
-                , country);
+
+        if (name.equals("")) {
+            return GeocodingResult.error("Failed to geocode");
+        }
+        return GeocodingResult.success(name);
     }
 }

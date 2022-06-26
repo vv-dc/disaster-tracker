@@ -3,20 +3,25 @@ package disaster.service.geocoding;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import disaster.config.DisasterApiConfig;
 import disaster.model.geocoding.GeocodingResult;
 import disaster.model.mappers.OpenStreetMapGeocodeResultDeserializer;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Mono;
+
+import java.net.URI;
 
 @Service
 public class OpenStreetMapGeolocationService {
 
-    public static final String API_URL = "https://nominatim.openstreetmap.org";
-    public static final WebClient webclient = WebClient.create(API_URL);
+    public static final WebClient webclient = WebClient.create();
     public final ObjectMapper mapper;
+    private final DisasterApiConfig disasterApiConfig;
 
-    public OpenStreetMapGeolocationService() {
+    public OpenStreetMapGeolocationService(DisasterApiConfig disasterApiConfig) {
+        this.disasterApiConfig = disasterApiConfig;
         mapper = new ObjectMapper();
         SimpleModule module = new SimpleModule();
         module.addDeserializer(GeocodingResult.class, new OpenStreetMapGeocodeResultDeserializer());
@@ -24,28 +29,27 @@ public class OpenStreetMapGeolocationService {
     }
 
     public Mono<GeocodingResult> locate(double latitude, double longitude) {
+        var uri = buildUri(latitude, longitude);
         return webclient.get()
-                .uri(uriBuilder -> uriBuilder
-                        .path("/reverse")
-                        .queryParam("format", "json")
-                        .queryParam("lat", latitude)
-                        .queryParam("lon", longitude)
-                        .build()
-                )
-                .exchangeToMono(response -> {
-                    if (!response.statusCode().is5xxServerError()) {
-                        return response
-                                .bodyToMono(String.class)
-                                .map(body -> {
-                                    try {
-                                        return mapper.readValue(body, GeocodingResult.class);
-                                    } catch (JsonProcessingException e) {
-                                        return GeocodingResult.error(e.getMessage());
-                                    }
-                                });
-                    } else {
-                        return response.createException().flatMap(Mono::error);
+                .uri(uri)
+                .retrieve()
+                .bodyToMono(String.class)
+                .map(body -> {
+                    try {
+                        return mapper.readValue(body, GeocodingResult.class);
+                    } catch (JsonProcessingException e) {
+                        return GeocodingResult.error(e.getMessage());
                     }
                 });
+    }
+
+    private URI buildUri(double latitude, double longitude) {
+        return UriComponentsBuilder
+                .fromHttpUrl(disasterApiConfig.getOpenStreetMapApiUrl())
+                .queryParam("format", "json")
+                .queryParam("lat", latitude)
+                .queryParam("lon", longitude)
+                .build()
+                .toUri();
     }
 }

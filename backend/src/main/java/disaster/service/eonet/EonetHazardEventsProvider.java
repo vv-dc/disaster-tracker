@@ -11,7 +11,7 @@ public class EonetHazardEventsProvider {
 
     @Autowired
     public EonetHazardEventsProvider(EonetClient client) {
-        reactiveEventProvider = Flux.interval(Duration.ofMinutes(1))
+        reactiveEventProvider = Flux.interval(Duration.ZERO)
                 .concatMap(i -> client.getEvents());
     }
 

@@ -11,11 +11,9 @@ public abstract class GeocodingResult {
         return result;
     }
 
-    public static GeocodingResult success(String name, String state, String country) {
+    public static GeocodingResult success(String name) {
         var result = new SuccessGeocodingResult();
         result.setName(name);
-        result.setState(state);
-        result.setCountry(country);
         return result;
     }
 }

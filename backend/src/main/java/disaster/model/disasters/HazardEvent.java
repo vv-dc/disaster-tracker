@@ -3,11 +3,14 @@ package disaster.model.disasters;
 import disaster.model.geocoding.GeocodingResult;
 import disaster.model.geocoding.SuccessGeocodingResult;
 import lombok.Data;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
-@Document(collection = "hazard-events")
+@Document(collection = "HazardEvents")
 public class HazardEvent {
+    @Id
+    private String id;
     private String hazardType;
     private String startTime;
     private double longitude;
