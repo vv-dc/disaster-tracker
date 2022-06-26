@@ -26,5 +26,8 @@ out
 # Gradle build output directory
 build
 
-# JS dependecies
+# JS dependencies
 node_modules
+
+# .env files
+.env

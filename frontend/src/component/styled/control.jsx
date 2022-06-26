@@ -4,6 +4,7 @@ export const FormInput = styled.input`
   padding: 3px 6px;
   background-color: var(--white);
   line-height: 20px;
+  height: 30px;
   border: 1px solid var(--gray);
   &:focus {
     outline: 1px solid var(--gray-dark);
