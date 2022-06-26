@@ -1,20 +1,22 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 import { NotificationsSearchForm } from './notifications-search-form';
 import { NotificationsTextArea } from './notifications-text-area';
 
 export const NotificationsBar = () => {
+  const [notifications, setNotifications] = useState([]);
+
+  const handleNewNotifications = async (notifications) => {
+    setNotifications((prev) => {
+      return [...prev, ...notifications];
+    });
+  };
+
   return (
     <NotificationsBarWrapper>
-      <NotificationsSearchForm />
+      <NotificationsSearchForm formCallback={handleNewNotifications} />
       <NotificationTextAreaWrapper>
-        <NotificationsTextArea
-          notifications={[
-            { id: 1, description: '123' },
-            { id: 2, description: '456' },
-            { id: 3, description: '789' },
-          ]}
-        />
+        <NotificationsTextArea notifications={notifications} />
       </NotificationTextAreaWrapper>
     </NotificationsBarWrapper>
   );
