@@ -1,4 +1,4 @@
-package disaster.service;
+package disaster.service.calendar;
 
 import disaster.model.calendar.CalendarEvent;
 import disaster.model.calendar.CalendarSearchBounds;

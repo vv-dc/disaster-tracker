@@ -3,7 +3,7 @@ package disaster.controller.notification;
 import disaster.model.calendar.CalendarEvent;
 import disaster.model.calendar.CalendarSearchBounds;
 import disaster.model.calendar.CalendarSearchDto;
-import disaster.service.GoogleCalendarService;
+import disaster.service.calendar.GoogleCalendarService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;

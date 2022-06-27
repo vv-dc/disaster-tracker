@@ -1,4 +1,4 @@
-package disaster.service.disasteralert;
+package disaster.module.hazard.disasteralert;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.module.SimpleModule;
@@ -18,7 +18,7 @@ import reactor.core.publisher.Flux;
 import java.net.URI;
 
 @Service
-public class DisasterAlertClient {
+public class DisasterAlertApiClient {
 
     public static final WebClient webclient = WebClient.builder()
             .defaultHeader("Accept", MediaType.APPLICATION_XML_VALUE)
@@ -28,7 +28,7 @@ public class DisasterAlertClient {
     private final OpenStreetMapGeolocationService geolocationService;
     private final DisasterApiConfig disasterApiConfig;
 
-    public DisasterAlertClient(OpenStreetMapGeolocationService geolocationService, DisasterApiConfig disasterApiConfig) {
+    public DisasterAlertApiClient(OpenStreetMapGeolocationService geolocationService, DisasterApiConfig disasterApiConfig) {
         this.geolocationService = geolocationService;
         this.disasterApiConfig = disasterApiConfig;
 
