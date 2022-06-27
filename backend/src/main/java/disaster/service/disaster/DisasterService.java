@@ -1,14 +1,19 @@
 package disaster.service.disaster;
 
+import disaster.model.disasters.HazardEvent;
 import disaster.module.event.DisasterEventType;
 import disaster.module.hazard.HazardEventsProvider;
 import disaster.repository.ReactiveHazardEventRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
+
+import java.time.Duration;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -33,15 +38,24 @@ public class DisasterService {
         return repositorySink.asFlux();
     }
 
-    private Mono<Void> initEvents() {
+    private Flux<Void> initEvents() {
+        return Flux.interval(Duration.ZERO, Duration.ofMinutes(10))
+                .concatMap((flux) -> handleEvents());
+    }
+
+    private Mono<Void> handleEvents() {
         return eventsProvider
-            .getHazardEventsStream()
+            .composeHazardEvents()
             .collectList()
-            .map((lst) -> {
-                log.info("Saving " + lst.size() + " events");
-                return eventRepository.saveAll(lst);
-            })
+            .map(this::rewriteRepository)
             .then(emitRepositoryUpdate());
+    }
+
+    private Disposable rewriteRepository(List<HazardEvent> events) {
+        log.info("Saving " + events.size() + " events");
+        return eventRepository
+            .saveAll(events)
+            .subscribe((result) -> log.info("Saved " + events.size() + " events"));
     }
 
     private Mono<Void> emitRepositoryUpdate() {

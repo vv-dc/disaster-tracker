@@ -26,12 +26,11 @@ public class HazardEventsProvider {
         this.eonetApiClient = eonetApiClient;
     }
 
-    public Flux<HazardEvent> getHazardEventsStream() {
-        return Flux.interval(Duration.ZERO, Duration.ofMinutes(10))
-            .concatMap((flux) -> Flux.merge(
+    public Flux<HazardEvent> composeHazardEvents() {
+        return Flux.merge(
                disasterAlertApiClient.getEvents(),
                eonetApiClient.getEvents()
-            ))
-            .log(); // TODO: fixme
+            )
+            .log();
     }
 }
