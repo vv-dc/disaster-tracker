@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import disaster.model.disasters.HazardEvent;
 import disaster.model.disasters.HazardEventApiDto;
+import disaster.model.disasters.HazardEventType;
 
 import java.io.IOException;
 
@@ -24,7 +25,7 @@ public class DisasterAlertHazardEventDeserializer extends StdDeserializer<Hazard
         JsonNode node = p.getCodec().readTree(p);
 
         var startDate = node.get("start_Date").asText();
-        var type = node.get("type_ID").asText();
+        var type = getHazardEventType(node.get("type_ID").asText());
         var longitude = node.get("longitude").asDouble();
         var latitude = node.get("latitude").asDouble();
 
@@ -34,5 +35,13 @@ public class DisasterAlertHazardEventDeserializer extends StdDeserializer<Hazard
         hazardEvent.setLongitude(longitude);
         hazardEvent.setLatitude(latitude);
         return hazardEvent;
+    }
+
+    private HazardEventType getHazardEventType(String string) {
+        try {
+            return HazardEventType.valueOf(string);
+        } catch (IllegalArgumentException ex) {
+            return HazardEventType.UNKNOWN;
+        }
     }
 }
