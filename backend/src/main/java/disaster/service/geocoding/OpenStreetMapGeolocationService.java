@@ -49,6 +49,7 @@ public class OpenStreetMapGeolocationService {
                 .queryParam("format", "json")
                 .queryParam("lat", latitude)
                 .queryParam("lon", longitude)
+                .queryParam("accept-language", "en")
                 .build()
                 .toUri();
     }

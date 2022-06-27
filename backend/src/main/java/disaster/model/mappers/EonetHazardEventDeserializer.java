@@ -5,10 +5,23 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import disaster.model.disasters.HazardEventApiDto;
+import disaster.model.disasters.HazardEventType;
 
 import java.io.IOException;
+import java.util.Locale;
+import java.util.Map;
 
 public class EonetHazardEventDeserializer extends StdDeserializer<HazardEventApiDto> {
+
+    private final Map<String, HazardEventType> hazardEventTypeMap = Map.of(
+            "drought", HazardEventType.DROUGHT,
+            "earthquakes", HazardEventType.EARTHQUAKE,
+            "floods", HazardEventType.FLOOD,
+            "landslides", HazardEventType.LANDSLIDE,
+            "severe storms", HazardEventType.STORM,
+            "volcanoes", HazardEventType.VOLCANO,
+            "wildfires", HazardEventType.WILDFIRE
+    );
 
     public EonetHazardEventDeserializer() {
         this(null);
@@ -22,11 +35,12 @@ public class EonetHazardEventDeserializer extends StdDeserializer<HazardEventApi
     public HazardEventApiDto deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
         JsonNode node = p.getCodec().readTree(p);
 
-        var startDate = node.get("start_Date").asText();
-        var type = node.get("categories").get(0).get("title").textValue();
+
+        var type = getHazardEventType(node.get("categories").get(0).get("title").textValue());
         var geometryNode = node.get("geometry").get(0);
-        var longitude = geometryNode.get("longitude").asDouble();
-        var latitude = geometryNode.get("latitude").asDouble();
+        var startDate = geometryNode.get("date").asText();
+        var longitude = geometryNode.get("coordinates").get(0).asDouble();
+        var latitude = geometryNode.get("coordinates").get(1).asDouble();
 
         var hazardEvent = new HazardEventApiDto();
         hazardEvent.setHazardType(type);
@@ -34,5 +48,12 @@ public class EonetHazardEventDeserializer extends StdDeserializer<HazardEventApi
         hazardEvent.setLongitude(longitude);
         hazardEvent.setLatitude(latitude);
         return hazardEvent;
+    }
+
+    private HazardEventType getHazardEventType(String string) {
+        var key = string.toLowerCase(Locale.ROOT);
+        if (hazardEventTypeMap.containsKey(key))
+            return hazardEventTypeMap.get(key);
+        return HazardEventType.UNKNOWN;
     }
 }
