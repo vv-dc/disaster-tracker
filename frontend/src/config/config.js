@@ -6,5 +6,8 @@ export const config = {
       successUrl: 'http://localhost:3000',
       failureUrl: 'http://localhost:3000/error',
     },
+    notification: {
+      host: process.env.REACT_APP_NOTIFICATION_BACKEND_HOST,
+    },
   },
 };

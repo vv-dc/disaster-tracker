@@ -1,0 +1,24 @@
+version: '3.9'
+
+services:
+  disater-mongodb:
+    image: mongo:4.2.21
+    container_name: disater-tracker-mongodb
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - local
+
+volumes:
+  mongo_data:
+
+networks:
+  local:
+    name: disaster-local
+    external: false

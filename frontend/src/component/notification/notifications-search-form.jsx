@@ -6,19 +6,25 @@ import {
   FormInput,
   FormLabel,
 } from '../styled/control';
+import { formatKebabWithTZ } from '../../lib/date.utils';
 
-export const NotificationsSearchForm = () => {
+export const NotificationsSearchForm = ({ formCallback }) => {
   const [timeMin, setTimeMin] = useState('');
   const [timeMax, setTimeMax] = useState('');
-  const [calendarId /*setCalendarId*/] = useState('');
+  const [calendarId, setCalendarId] = useState('');
 
-  const handleSearch = (event) => {
+  const handleSearch = async (event) => {
     event.preventDefault();
-    console.dir({
-      timeMin,
-      timeMax,
+    const searchDto = prepareSearchDto();
+    formCallback(searchDto);
+  };
+
+  const prepareSearchDto = () => {
+    return {
       calendarId,
-    });
+      timeMin: formatKebabWithTZ(timeMin),
+      timeMax: formatKebabWithTZ(timeMax),
+    };
   };
 
   return (
@@ -33,8 +39,9 @@ export const NotificationsSearchForm = () => {
               id="search-form__calendar-id"
               name="time-min"
               type="text"
-              onChange={(e) => setTimeMin(e.target.value.trim())}
-              value={timeMin}
+              onChange={(e) => setCalendarId(e.target.value.trim())}
+              value={calendarId}
+              required
             />
           </FormColumn>
           <FormColumn>
@@ -42,9 +49,10 @@ export const NotificationsSearchForm = () => {
             <FormInput
               id="search-form__time-min"
               name="time-min"
-              type="date"
+              type="datetime-local"
               onChange={(e) => setTimeMin(e.target.value.trim())}
               value={timeMin}
+              required
             />
           </FormColumn>
           <FormColumn>
@@ -52,9 +60,10 @@ export const NotificationsSearchForm = () => {
             <FormInput
               id="search-form__time-max"
               name="time-max"
-              type="date"
+              type="datetime-local"
               onChange={(e) => setTimeMax(e.target.value.trim())}
               value={timeMax}
+              required
             />
           </FormColumn>
         </FormColumnsWrapper>
@@ -77,7 +86,12 @@ const SearchFormWrapper = styled.div`
 
 const FormColumnsWrapper = styled.div`
   display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 0 20px;
+  ${FormInput} {
+    width: 200px;
+  }
 `;
 
 const SearchButton = styled(BaseButton)`

@@ -2,7 +2,6 @@ package disaster.module.auth.oauth.handler;
 
 import disaster.module.auth.oauth.state.OauthRequestState;
 import disaster.module.auth.oauth.state.OauthRequestStateUtils;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.server.DefaultServerRedirectStrategy;
 import org.springframework.security.web.server.ServerRedirectStrategy;

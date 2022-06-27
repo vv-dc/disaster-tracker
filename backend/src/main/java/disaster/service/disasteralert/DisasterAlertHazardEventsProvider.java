@@ -14,7 +14,7 @@ public class DisasterAlertHazardEventsProvider {
 
     @Autowired
     public DisasterAlertHazardEventsProvider(DisasterAlertClient client) {
-        reactiveEventProvider = Flux.interval(Duration.ofMinutes(1))
+        reactiveEventProvider = Flux.interval(Duration.ZERO, Duration.ofMinutes(1))
                 .concatMap(i -> client.getEvents());
     }
 
