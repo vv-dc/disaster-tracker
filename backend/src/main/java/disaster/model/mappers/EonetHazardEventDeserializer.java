@@ -9,8 +9,19 @@ import disaster.model.disasters.HazardEventType;
 
 import java.io.IOException;
 import java.util.Locale;
+import java.util.Map;
 
 public class EonetHazardEventDeserializer extends StdDeserializer<HazardEventApiDto> {
+
+    private final Map<String, HazardEventType> hazardEventTypeMap = Map.of(
+            "drought", HazardEventType.DROUGHT,
+            "earthquakes", HazardEventType.EARTHQUAKE,
+            "floods", HazardEventType.FLOOD,
+            "landslides", HazardEventType.LANDSLIDE,
+            "severe storms", HazardEventType.STORM,
+            "volcanoes", HazardEventType.VOLCANO,
+            "wildfires", HazardEventType.WILDFIRE
+    );
 
     public EonetHazardEventDeserializer() {
         this(null);
@@ -40,20 +51,9 @@ public class EonetHazardEventDeserializer extends StdDeserializer<HazardEventApi
     }
 
     private HazardEventType getHazardEventType(String string) {
-        if (string.toLowerCase(Locale.ROOT).equals("drought"))
-            return HazardEventType.DROUGHT;
-        if (string.toLowerCase(Locale.ROOT).equals("earthquakes"))
-            return HazardEventType.EARTHQUAKE;
-        if (string.toLowerCase(Locale.ROOT).equals("floods"))
-            return HazardEventType.FLOOD;
-        if (string.toLowerCase(Locale.ROOT).equals("landslides"))
-            return HazardEventType.LANDSLIDE;
-        if (string.toLowerCase(Locale.ROOT).equals("severe storms"))
-            return HazardEventType.STORM;
-        if (string.toLowerCase(Locale.ROOT).equals("volcanoes"))
-            return HazardEventType.VOLCANO;
-        if (string.toLowerCase(Locale.ROOT).equals("wildfires"))
-            return HazardEventType.WILDFIRE;
+        var key = string.toLowerCase(Locale.ROOT);
+        if (hazardEventTypeMap.containsKey(key))
+            return hazardEventTypeMap.get(key);
         return HazardEventType.UNKNOWN;
     }
 }

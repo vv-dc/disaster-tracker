@@ -38,22 +38,10 @@ public class DisasterAlertHazardEventDeserializer extends StdDeserializer<Hazard
     }
 
     private HazardEventType getHazardEventType(String string) {
-        if (string.equals("FLOOD"))
-            return HazardEventType.FLOOD;
-        if (string.equals("DROUGHT"))
-            return HazardEventType.DROUGHT;
-        if (string.equals("BIOMEDICAL"))
-            return HazardEventType.BIOMEDICAL;
-        if (string.equals("STORM"))
-            return HazardEventType.STORM;
-        if (string.equals("VOLCANO"))
-            return HazardEventType.VOLCANO;
-        if (string.equals("LANDSLIDE"))
-            return HazardEventType.LANDSLIDE;
-        if (string.equals("EARTHQUAKE"))
-            return HazardEventType.EARTHQUAKE;
-        if (string.equals("WILDFIRE"))
-            return HazardEventType.WILDFIRE;
-        return HazardEventType.UNKNOWN;
+        try {
+            return HazardEventType.valueOf(string);
+        } catch (IllegalArgumentException ex) {
+            return HazardEventType.UNKNOWN;
+        }
     }
 }
