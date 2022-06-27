@@ -11,7 +11,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class HazardEvent {
     @Id
     private String id;
-    private String hazardType;
+    private HazardEventType hazardType;
     private String startTime;
     private double longitude;
     private double latitude;

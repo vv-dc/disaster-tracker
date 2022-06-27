@@ -5,8 +5,10 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import disaster.model.disasters.HazardEventApiDto;
+import disaster.model.disasters.HazardEventType;
 
 import java.io.IOException;
+import java.util.Locale;
 
 public class EonetHazardEventDeserializer extends StdDeserializer<HazardEventApiDto> {
 
@@ -22,11 +24,12 @@ public class EonetHazardEventDeserializer extends StdDeserializer<HazardEventApi
     public HazardEventApiDto deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
         JsonNode node = p.getCodec().readTree(p);
 
-        var startDate = node.get("start_Date").asText();
-        var type = node.get("categories").get(0).get("title").textValue();
+
+        var type = getHazardEventType(node.get("categories").get(0).get("title").textValue());
         var geometryNode = node.get("geometry").get(0);
-        var longitude = geometryNode.get("longitude").asDouble();
-        var latitude = geometryNode.get("latitude").asDouble();
+        var startDate = geometryNode.get("date").asText();
+        var longitude = geometryNode.get("coordinates").get(0).asDouble();
+        var latitude = geometryNode.get("coordinates").get(1).asDouble();
 
         var hazardEvent = new HazardEventApiDto();
         hazardEvent.setHazardType(type);
@@ -34,5 +37,23 @@ public class EonetHazardEventDeserializer extends StdDeserializer<HazardEventApi
         hazardEvent.setLongitude(longitude);
         hazardEvent.setLatitude(latitude);
         return hazardEvent;
+    }
+
+    private HazardEventType getHazardEventType(String string) {
+        if (string.toLowerCase(Locale.ROOT).equals("drought"))
+            return HazardEventType.DROUGHT;
+        if (string.toLowerCase(Locale.ROOT).equals("earthquakes"))
+            return HazardEventType.EARTHQUAKE;
+        if (string.toLowerCase(Locale.ROOT).equals("floods"))
+            return HazardEventType.FLOOD;
+        if (string.toLowerCase(Locale.ROOT).equals("landslides"))
+            return HazardEventType.LANDSLIDE;
+        if (string.toLowerCase(Locale.ROOT).equals("severe storms"))
+            return HazardEventType.STORM;
+        if (string.toLowerCase(Locale.ROOT).equals("volcanoes"))
+            return HazardEventType.VOLCANO;
+        if (string.toLowerCase(Locale.ROOT).equals("wildfires"))
+            return HazardEventType.WILDFIRE;
+        return HazardEventType.UNKNOWN;
     }
 }
