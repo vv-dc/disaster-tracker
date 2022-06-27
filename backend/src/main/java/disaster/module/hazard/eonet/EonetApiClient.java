@@ -28,10 +28,10 @@ public class EonetApiClient {
 
         this.disasterApiConfig = disasterApiConfig;
         this.geolocationService = geolocationService;
-        mapper = new ObjectMapper();
+        this.mapper = new ObjectMapper();
         SimpleModule module = new SimpleModule();
         module.addDeserializer(HazardEventApiDto.class, new EonetHazardEventDeserializer());
-        mapper.registerModule(module);
+        this.mapper.registerModule(module);
     }
 
     public Flux<HazardEvent> getEvents() {
