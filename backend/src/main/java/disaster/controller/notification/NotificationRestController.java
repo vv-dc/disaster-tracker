@@ -1,8 +1,9 @@
 package disaster.controller.notification;
 
-import disaster.model.calendar.CalendarSearchBounds;
+import disaster.model.common.TimeSearchBounds;
 import disaster.model.calendar.CalendarSearchDto;
 import disaster.model.disasters.HazardEvent;
+import disaster.model.notification.DisasterNotification;
 import disaster.service.notification.NotificationService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +23,7 @@ public class NotificationRestController {
     private final NotificationService notificationService;
 
     @GetMapping("/api/events")
-    public Flux<HazardEvent> getDisasterEvents(
+    public Flux<DisasterNotification> getDisasterEvents(
         @RequestParam(value = "calendarId") String calendarId,
         @RequestParam(value = "timeMin") String timeMin,
         @RequestParam(value = "timeMax") String timeMax,
@@ -31,7 +32,7 @@ public class NotificationRestController {
         var searchDto = new CalendarSearchDto();
         searchDto.setCalendarId(calendarId);
         searchDto.setAccessToken("Bearer " + accessToken);
-        searchDto.setTimeBounds(new CalendarSearchBounds(timeMin, timeMax));
+        searchDto.setTimeBounds(new TimeSearchBounds(timeMin, timeMax));
 
         return notificationService.getNotificationsStream(searchDto);
     }

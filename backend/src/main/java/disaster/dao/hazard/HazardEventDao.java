@@ -1,6 +1,7 @@
 package disaster.dao.hazard;
 
 import com.mongodb.client.result.UpdateResult;
+import disaster.model.common.TimeSearchBounds;
 import disaster.model.disasters.HazardEvent;
 import disaster.module.mongo.BatchStatusType;
 import disaster.module.mongo.HazardEventBatch;
@@ -11,8 +12,9 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import static org.springframework.data.mongodb.core.aggregation.ArrayOperators.Filter.filter;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
@@ -28,6 +30,20 @@ public class HazardEventDao {
     public HazardEventDao(HazardEventBatchRepository repository, ReactiveMongoTemplate mongoTemplate) {
         this.repository = repository;
         this.mongoTemplate = mongoTemplate;
+    }
+
+    public Flux<HazardEvent> getHazardEventsByBounds(TimeSearchBounds bounds) {
+        var activeCriteria = Criteria.where("status").is(BatchStatusType.ACTIVE);
+        var boundsCriteria = Criteria.where("items").elemMatch(
+            Criteria.where("startTime").gte(bounds.getTimeMin()).lt(bounds.getTimeMax())
+        );
+
+        Query query = new Query();
+        query.addCriteria(activeCriteria.andOperator(boundsCriteria));
+
+        return mongoTemplate.findOne(query, HazardEventBatch.class)
+            .doOnNext((res) -> log.info("Found " + res.getItems().size() + " disasters"))
+            .flatMapIterable(HazardEventBatch::getItems);
     }
 
     public Mono<UpdateResult> saveHazardEventsBatch(List<HazardEvent> events) {

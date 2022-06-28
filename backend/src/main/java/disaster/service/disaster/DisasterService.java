@@ -1,7 +1,7 @@
 package disaster.service.disaster;
 
 import disaster.dao.hazard.HazardEventDao;
-import disaster.model.calendar.CalendarEvent;
+import disaster.model.common.TimeSearchBounds;
 import disaster.model.disasters.HazardEvent;
 import disaster.module.event.DisasterEventType;
 import disaster.module.hazard.HazardEventsProvider;
@@ -12,7 +12,6 @@ import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
 
 import java.time.Duration;
-import java.time.LocalTime;
 
 @Service
 @Slf4j
@@ -31,18 +30,15 @@ public class DisasterService {
         this.eventsProvider = eventsProvider;
         this.eventDao = eventDao;
         this.batchUpdateSink = Sinks.many().replay().all();
-        this.initEvents().subscribe();
+//        this.initEvents().subscribe();
     }
 
     public Flux<DisasterEventType> getEventFlux() {
         return batchUpdateSink.asFlux();
     }
 
-    public Flux<HazardEvent> getDisastersByCalendarEvents(Flux<CalendarEvent> calendarEvents) {
-        calendarEvents.subscribe();
-        var event = new HazardEvent();
-        event.setStartTime(LocalTime.now().toString());
-        return Flux.just(event);
+    public Flux<HazardEvent> getDisasterEventsByBounds(TimeSearchBounds bounds) {
+        return eventDao.getHazardEventsByBounds(bounds);
     }
 
     private Mono<Void> initEvents() {

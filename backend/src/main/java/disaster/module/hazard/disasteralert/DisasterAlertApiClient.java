@@ -57,6 +57,8 @@ public class DisasterAlertApiClient {
                         .locate(dto.getLatitude(), dto.getLongitude())
                         .handle((location, s) -> {
                             if (location instanceof SuccessGeocodingResult) {
+                                var fixedDate = dto.getStartTime().substring(0, 19) + "Z";
+                                dto.setStartTime(fixedDate);
                                 s.next(HazardEvent.fromDto(dto, location));
                             }
                         })

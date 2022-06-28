@@ -37,35 +37,35 @@ public class EonetApiClient {
     public Flux<HazardEvent> getEvents() {
         var uri = buildUri("open");
         return webclient.get()
-                .uri(uri)
-                .retrieve()
-                .bodyToMono(String.class)
-                .flatMapMany(
-                        body -> {
-                            try {
-                                var jsonNode = mapper.readTree(body);
-                                return Flux.fromArray(mapper.readValue(jsonNode.get("events").toString(), HazardEventApiDto[].class)
-                                );
-                            } catch (JsonProcessingException e) {
-                                return Flux.error(e);
-                            }
-                        }
-                ).concatMap(dto -> geolocationService
-                        .locate(dto.getLatitude(), dto.getLongitude())
-                        .handle((location, s) -> {
-                            if (location instanceof SuccessGeocodingResult) {
-                                s.next(HazardEvent.fromDto(dto, location));
-                            }
-                        })
-                );
+            .uri(uri)
+            .retrieve()
+            .bodyToMono(String.class)
+            .flatMapMany(
+                body -> {
+                    try {
+                        var jsonNode = mapper.readTree(body);
+                        return Flux.fromArray(mapper.readValue(jsonNode.get("events").toString(), HazardEventApiDto[].class)
+                        );
+                    } catch (JsonProcessingException e) {
+                        return Flux.error(e);
+                    }
+                }
+            ).concatMap(dto -> geolocationService
+                .locate(dto.getLatitude(), dto.getLongitude())
+                .handle((location, s) -> {
+                    if (location instanceof SuccessGeocodingResult) {
+                        s.next(HazardEvent.fromDto(dto, location));
+                    }
+                })
+            );
     }
 
     private URI buildUri(String status) {
         return UriComponentsBuilder
-                .fromHttpUrl(disasterApiConfig.getEonetApiUrl())
-                .queryParam("status", status)
-                .queryParam("limit", 30)
-                .build()
-                .toUri();
+            .fromHttpUrl(disasterApiConfig.getEonetApiUrl())
+            .queryParam("status", status)
+            .queryParam("limit", 5)
+            .build()
+            .toUri();
     }
 }

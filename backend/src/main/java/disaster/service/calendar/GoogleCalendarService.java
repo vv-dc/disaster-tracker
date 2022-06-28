@@ -2,13 +2,12 @@ package disaster.service.calendar;
 
 import disaster.dao.calendar.CalendarDao;
 import disaster.model.calendar.CalendarEvent;
-import disaster.model.calendar.CalendarSearchBounds;
+import disaster.model.common.TimeSearchBounds;
 import disaster.model.calendar.CalendarSearchDto;
 import disaster.model.calendar.error.CalendarInvalidBounds;
 import disaster.module.calendar.GoogleCalendarApiClient;
 import disaster.util.DateTimeUtils;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -45,7 +44,7 @@ public class GoogleCalendarService {
         return location != null && !location.trim().equals("");
     }
 
-    private boolean isValidSearchBounds(CalendarSearchBounds bounds) {
+    private boolean isValidSearchBounds(TimeSearchBounds bounds) {
         return DateTimeUtils.isAfterNow(bounds.getTimeMin())
             && DateTimeUtils.isBoundsValid(bounds.getTimeMin(), bounds.getTimeMax());
     }

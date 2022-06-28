@@ -3,14 +3,18 @@ package disaster.service.notification;
 import disaster.model.calendar.CalendarEvent;
 import disaster.model.calendar.CalendarSearchDto;
 import disaster.model.disasters.HazardEvent;
+import disaster.model.notification.DisasterNotification;
 import disaster.module.event.DisasterEventType;
 import disaster.service.calendar.GoogleCalendarService;
 import disaster.service.disaster.DisasterService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.time.Duration;
+import java.util.List;
+import java.util.Objects;
 
 @Service
 @AllArgsConstructor
@@ -19,12 +23,14 @@ public class NotificationService {
     private final GoogleCalendarService googleCalendarService;
     private final DisasterService disasterService;
 
-    public Flux<HazardEvent> getNotificationsStream(CalendarSearchDto searchDto) {
+    public Flux<DisasterNotification> getNotificationsStream(CalendarSearchDto searchDto) {
         return getEventTypeStream()
-            .flatMap((eventType) -> disasterService.getDisastersByCalendarEvents(
-                getCalendarEventsByEventType(eventType, searchDto))
+            .flatMap((eventType) -> disasterService.getDisasterEventsByBounds(searchDto.getTimeBounds())
+                .collectList()
+                .flatMapMany((lst) -> getCalendarEventsByEventType(eventType, searchDto)
+                    .flatMap((event) -> this.mapNotifications(event, lst))
+                )
             );
-
     }
 
     private Flux<CalendarEvent> getCalendarEventsByEventType(DisasterEventType eventType, CalendarSearchDto searchDto) {
@@ -41,6 +47,14 @@ public class NotificationService {
                 return googleCalendarService.getEventsFromDatabase(searchDto.getCalendarId());
         }
         return Flux.empty();
+    }
+
+    private Mono<DisasterNotification> mapNotifications(CalendarEvent calendarEvent, List<HazardEvent> disasters) {
+        return Flux.fromIterable(disasters)
+            .filter((disaster) -> Objects.equals(disaster.getLocation(), calendarEvent.getLocation()))
+            .collectList()
+            .map((lst) -> new DisasterNotification(calendarEvent, lst))
+            .filter((notification) -> !notification.getDisasterEvents().isEmpty());
     }
 
     private Flux<DisasterEventType> getEventTypeStream() {

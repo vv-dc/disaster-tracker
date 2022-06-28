@@ -6,18 +6,22 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import disaster.config.DisasterApiConfig;
 import disaster.model.geocoding.GeocodingResult;
 import disaster.model.mappers.OpenStreetMapGeocodeResultDeserializer;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Mono;
 
 import java.net.URI;
+import java.text.DecimalFormat;
 
 @Service
+@Slf4j
 public class OpenStreetMapGeolocationService {
+    private static final DecimalFormat df = new DecimalFormat("#.###");
 
-    public static final WebClient webclient = WebClient.create();
-    public final ObjectMapper mapper;
+    private final WebClient webclient = WebClient.create();
+    private final ObjectMapper mapper;
     private final DisasterApiConfig disasterApiConfig;
 
     public OpenStreetMapGeolocationService(DisasterApiConfig disasterApiConfig) {
@@ -38,6 +42,7 @@ public class OpenStreetMapGeolocationService {
                     try {
                         return mapper.readValue(body, GeocodingResult.class);
                     } catch (JsonProcessingException e) {
+                        log.info("Unable to geocode: (" + latitude + ", " + longitude + ")");
                         return GeocodingResult.error(e.getMessage());
                     }
                 });
@@ -47,8 +52,8 @@ public class OpenStreetMapGeolocationService {
         return UriComponentsBuilder
                 .fromHttpUrl(disasterApiConfig.getOpenStreetMapApiUrl())
                 .queryParam("format", "json")
-                .queryParam("lat", latitude)
-                .queryParam("lon", longitude)
+                .queryParam("lat", df.format(latitude))
+                .queryParam("lon", df.format(longitude))
                 .queryParam("accept-language", "en")
                 .build()
                 .toUri();
