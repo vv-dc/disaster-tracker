@@ -4,24 +4,24 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
-import disaster.model.disasters.HazardEvent;
-import disaster.model.disasters.HazardEventApiDto;
-import disaster.model.disasters.HazardEventType;
+import disaster.model.disaster.DisasterEvent;
+import disaster.model.disaster.DisasterEventRawDto;
+import disaster.model.disaster.DisasterEventType;
 
 import java.io.IOException;
 
-public class DisasterAlertHazardEventDeserializer extends StdDeserializer<HazardEventApiDto> {
+public class DisasterAlertHazardEventDeserializer extends StdDeserializer<DisasterEventRawDto> {
 
     public DisasterAlertHazardEventDeserializer() {
         this(null);
     }
 
-    public DisasterAlertHazardEventDeserializer(Class<HazardEvent> t) {
+    public DisasterAlertHazardEventDeserializer(Class<DisasterEvent> t) {
         super(t);
     }
 
     @Override
-    public HazardEventApiDto deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
+    public DisasterEventRawDto deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
         JsonNode node = p.getCodec().readTree(p);
 
         var startDate = node.get("start_Date").asText();
@@ -29,7 +29,7 @@ public class DisasterAlertHazardEventDeserializer extends StdDeserializer<Hazard
         var longitude = node.get("longitude").asDouble();
         var latitude = node.get("latitude").asDouble();
 
-        var hazardEvent = new HazardEventApiDto();
+        var hazardEvent = new DisasterEventRawDto();
         hazardEvent.setHazardType(type);
         hazardEvent.setStartTime(startDate);
         hazardEvent.setLongitude(longitude);
@@ -37,11 +37,11 @@ public class DisasterAlertHazardEventDeserializer extends StdDeserializer<Hazard
         return hazardEvent;
     }
 
-    private HazardEventType getHazardEventType(String string) {
+    private DisasterEventType getHazardEventType(String string) {
         try {
-            return HazardEventType.valueOf(string);
+            return DisasterEventType.valueOf(string);
         } catch (IllegalArgumentException ex) {
-            return HazardEventType.UNKNOWN;
+            return DisasterEventType.UNKNOWN;
         }
     }
 }

@@ -1,11 +1,12 @@
-package disaster.module.hazard.disasteralert;
+package disaster.module.disaster.disasteralert;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import disaster.config.DisasterApiConfig;
-import disaster.model.disasters.HazardEvent;
-import disaster.model.disasters.HazardEventApiDto;
+import disaster.model.disaster.DisasterEvent;
+import disaster.model.disaster.DisasterEventRawDto;
+import disaster.model.disaster.DisasterEventSource;
 import disaster.model.geocoding.SuccessGeocodingResult;
 import disaster.model.mappers.DisasterAlertHazardEventDeserializer;
 import disaster.service.geocoding.OpenStreetMapGeolocationService;
@@ -34,11 +35,11 @@ public class DisasterAlertApiClient {
 
         mapper = new XmlMapper();
         SimpleModule module = new SimpleModule();
-        module.addDeserializer(HazardEventApiDto.class, new DisasterAlertHazardEventDeserializer());
+        module.addDeserializer(DisasterEventRawDto.class, new DisasterAlertHazardEventDeserializer());
         mapper.registerModule(module);
     }
 
-    public Flux<HazardEvent> getEvents() {
+    public Flux<DisasterEvent> getEvents() {
         var uri = buildUri();
         return webclient.get()
                 .uri(uri)
@@ -46,7 +47,7 @@ public class DisasterAlertApiClient {
                 .bodyToMono(String.class)
                 .flatMapMany(body -> {
                             try {
-                                return Flux.fromArray(mapper.readValue(body, HazardEventApiDto[].class)
+                                return Flux.fromArray(mapper.readValue(body, DisasterEventRawDto[].class)
                                 );
                             } catch (JsonProcessingException e) {
                                 return Flux.error(e);
@@ -59,7 +60,7 @@ public class DisasterAlertApiClient {
                             if (location instanceof SuccessGeocodingResult) {
                                 var fixedDate = dto.getStartTime().substring(0, 19) + "Z";
                                 dto.setStartTime(fixedDate);
-                                s.next(HazardEvent.fromDto(dto, location));
+                                s.next(DisasterEvent.fromDto(dto, location, DisasterEventSource.DISASTER_ALERT));
                             }
                         })
                 );

@@ -1,6 +1,6 @@
 package disaster.module.mongo;
 
-import disaster.model.disasters.HazardEvent;
+import disaster.model.disaster.DisasterEvent;
 import lombok.Data;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
@@ -11,13 +11,13 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
-@Document(collection = "HazardEventBatch")
-public class HazardEventBatch {
+@Document(collection = "DisasterEventBatch")
+public class DisasterEventBatch {
 
     @Id
     private String id;
 
-    private List<HazardEvent> items;
+    private List<DisasterEvent> items;
 
     @Indexed
     private BatchStatusType status;

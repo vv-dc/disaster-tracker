@@ -1,6 +1,6 @@
 package disaster.service.calendar;
 
-import disaster.dao.calendar.CalendarDao;
+import disaster.dao.calendar.CalendarEventDao;
 import disaster.model.calendar.CalendarEvent;
 import disaster.model.common.TimeSearchBounds;
 import disaster.model.calendar.CalendarSearchDto;
@@ -19,7 +19,7 @@ import java.util.List;
 public class GoogleCalendarService {
 
     private final GoogleCalendarApiClient apiClient;
-    private final CalendarDao calendarDao;
+    private final CalendarEventDao calendarEventDao;
 
     public Flux<CalendarEvent> getEventsByBoundsWithLocation(CalendarSearchDto searchDto) {
         if (!isValidSearchBounds(searchDto.getTimeBounds())) {
@@ -32,11 +32,14 @@ public class GoogleCalendarService {
     }
 
     public Mono<Void> saveEventsToDatabase(String calendarId, List<CalendarEvent> events) {
-        return calendarDao.upsertCalendarEvents(calendarId, events);
+        return calendarEventDao.upsertCalendarEvents(calendarId, events);
     }
 
-    public Flux<CalendarEvent> getEventsFromDatabase(String calendarId) {
-        return calendarDao.getCalendarEventByCalendarId(calendarId);
+    public Flux<CalendarEvent> getEventsFromDatabase(CalendarSearchDto searchDto) {
+        return calendarEventDao.getCalendarEventByBounds(
+            searchDto.getCalendarId(),
+            searchDto.getTimeBounds()
+        );
     }
 
     private boolean isWithLocation(CalendarEvent event) {

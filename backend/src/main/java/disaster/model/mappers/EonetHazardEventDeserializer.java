@@ -4,23 +4,23 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
-import disaster.model.disasters.HazardEventApiDto;
-import disaster.model.disasters.HazardEventType;
+import disaster.model.disaster.DisasterEventRawDto;
+import disaster.model.disaster.DisasterEventType;
 
 import java.io.IOException;
 import java.util.Locale;
 import java.util.Map;
 
-public class EonetHazardEventDeserializer extends StdDeserializer<HazardEventApiDto> {
+public class EonetHazardEventDeserializer extends StdDeserializer<DisasterEventRawDto> {
 
-    private final Map<String, HazardEventType> hazardEventTypeMap = Map.of(
-            "drought", HazardEventType.DROUGHT,
-            "earthquakes", HazardEventType.EARTHQUAKE,
-            "floods", HazardEventType.FLOOD,
-            "landslides", HazardEventType.LANDSLIDE,
-            "severe storms", HazardEventType.STORM,
-            "volcanoes", HazardEventType.VOLCANO,
-            "wildfires", HazardEventType.WILDFIRE
+    private final Map<String, DisasterEventType> hazardEventTypeMap = Map.of(
+            "drought", DisasterEventType.DROUGHT,
+            "earthquakes", DisasterEventType.EARTHQUAKE,
+            "floods", DisasterEventType.FLOOD,
+            "landslides", DisasterEventType.LANDSLIDE,
+            "severe storms", DisasterEventType.STORM,
+            "volcanoes", DisasterEventType.VOLCANO,
+            "wildfires", DisasterEventType.WILDFIRE
     );
 
     public EonetHazardEventDeserializer() {
@@ -32,7 +32,7 @@ public class EonetHazardEventDeserializer extends StdDeserializer<HazardEventApi
     }
 
     @Override
-    public HazardEventApiDto deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
+    public DisasterEventRawDto deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
         JsonNode node = p.getCodec().readTree(p);
 
 
@@ -42,7 +42,7 @@ public class EonetHazardEventDeserializer extends StdDeserializer<HazardEventApi
         var longitude = geometryNode.get("coordinates").get(0).asDouble();
         var latitude = geometryNode.get("coordinates").get(1).asDouble();
 
-        var hazardEvent = new HazardEventApiDto();
+        var hazardEvent = new DisasterEventRawDto();
         hazardEvent.setHazardType(type);
         hazardEvent.setStartTime(startDate);
         hazardEvent.setLongitude(longitude);
@@ -50,10 +50,10 @@ public class EonetHazardEventDeserializer extends StdDeserializer<HazardEventApi
         return hazardEvent;
     }
 
-    private HazardEventType getHazardEventType(String string) {
+    private DisasterEventType getHazardEventType(String string) {
         var key = string.toLowerCase(Locale.ROOT);
         if (hazardEventTypeMap.containsKey(key))
             return hazardEventTypeMap.get(key);
-        return HazardEventType.UNKNOWN;
+        return DisasterEventType.UNKNOWN;
     }
 }

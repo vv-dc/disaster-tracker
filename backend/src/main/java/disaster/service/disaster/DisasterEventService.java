@@ -1,10 +1,10 @@
 package disaster.service.disaster;
 
-import disaster.dao.hazard.HazardEventDao;
+import disaster.dao.disaster.DisasterEventDao;
 import disaster.model.common.TimeSearchBounds;
-import disaster.model.disasters.HazardEvent;
-import disaster.module.event.DisasterEventType;
-import disaster.module.hazard.HazardEventsProvider;
+import disaster.model.disaster.DisasterEvent;
+import disaster.model.disaster.DisasterUpdateEventType;
+import disaster.module.disaster.DisasterEventsProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -15,34 +15,34 @@ import java.time.Duration;
 
 @Service
 @Slf4j
-public class DisasterService {
+public class DisasterEventService {
 
-    private static final int BATCH_SIZE = 5;
+    private static final int BATCH_SIZE = 15;
 
-    private final HazardEventsProvider eventsProvider;
-    private final HazardEventDao eventDao;
-    private final Sinks.Many<DisasterEventType> batchUpdateSink;
+    private final DisasterEventsProvider eventsProvider;
+    private final DisasterEventDao eventDao;
+    private final Sinks.Many<DisasterUpdateEventType> batchUpdateSink;
 
-    public DisasterService(
-        HazardEventsProvider eventsProvider,
-        HazardEventDao eventDao
+    public DisasterEventService(
+        DisasterEventsProvider eventsProvider,
+        DisasterEventDao eventDao
     ) {
         this.eventsProvider = eventsProvider;
         this.eventDao = eventDao;
         this.batchUpdateSink = Sinks.many().replay().all();
-//        this.initEvents().subscribe();
+//        this.initEventsUpdate().subscribe();
     }
 
-    public Flux<DisasterEventType> getEventFlux() {
+    public Flux<DisasterUpdateEventType> getEventFlux() {
         return batchUpdateSink.asFlux();
     }
 
-    public Flux<HazardEvent> getDisasterEventsByBounds(TimeSearchBounds bounds) {
-        return eventDao.getHazardEventsByBounds(bounds);
+    public Flux<DisasterEvent> getDisasterEventsByBounds(TimeSearchBounds bounds) {
+        return eventDao.getDisasterEventsByBounds(bounds);
     }
 
-    private Mono<Void> initEvents() {
-        return Flux.interval(Duration.ZERO, Duration.ofMinutes(10))
+    private Mono<Void> initEventsUpdate() {
+        return Flux.interval(Duration.ZERO, Duration.ofMinutes(2))
             .concatMap((flux) ->
                 eventDao.createNewBatch()
                     .then(Mono.defer(this::handleEvents))
@@ -57,7 +57,7 @@ public class DisasterService {
             .window(BATCH_SIZE)
             .flatMap((flux) -> flux
                 .collectList()
-                .flatMap(eventDao::saveHazardEventsBatch)
+                .flatMap(eventDao::saveDisasterEventsBatch)
             )
             .then();
     }
@@ -66,7 +66,7 @@ public class DisasterService {
         return eventDao.setNewActive()
             .then(Mono.defer(() -> {
                 batchUpdateSink.emitNext(
-                    DisasterEventType.REPOSITORY_UPDATE_EVENT,
+                    DisasterUpdateEventType.REPOSITORY_UPDATE_EVENT,
                     Sinks.EmitFailureHandler.FAIL_FAST
                 );
                 return Mono.empty();

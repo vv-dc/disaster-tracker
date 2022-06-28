@@ -7,12 +7,11 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
-import reactor.core.publisher.Flux;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Document(collection = "CalendarEvent")
+@Document(collection = "CalendarEventBatch")
 @Data
 public class CalendarEventBatch {
 
@@ -23,9 +22,6 @@ public class CalendarEventBatch {
     private String calendarId;
 
     private List<CalendarEvent> items;
-
-    @CreatedDate
-    private LocalDateTime createdAt;
 
     @LastModifiedDate
     private LocalDateTime updatedAt;

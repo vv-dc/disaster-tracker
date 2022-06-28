@@ -1,11 +1,11 @@
-package disaster.dao.hazard;
+package disaster.dao.disaster;
 
 import com.mongodb.client.result.UpdateResult;
 import disaster.model.common.TimeSearchBounds;
-import disaster.model.disasters.HazardEvent;
+import disaster.model.disaster.DisasterEvent;
 import disaster.module.mongo.BatchStatusType;
-import disaster.module.mongo.HazardEventBatch;
-import disaster.repository.HazardEventBatchRepository;
+import disaster.module.mongo.DisasterEventBatch;
+import disaster.repository.DisasterEventRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -13,7 +13,6 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-import static org.springframework.data.mongodb.core.aggregation.ArrayOperators.Filter.filter;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -22,43 +21,35 @@ import java.util.List;
 
 @Repository
 @Slf4j
-public class HazardEventDao {
+public class DisasterEventDao {
 
-    private final HazardEventBatchRepository repository;
+    private final DisasterEventRepository repository;
     private final ReactiveMongoTemplate mongoTemplate;
 
-    public HazardEventDao(HazardEventBatchRepository repository, ReactiveMongoTemplate mongoTemplate) {
+    public DisasterEventDao(DisasterEventRepository repository, ReactiveMongoTemplate mongoTemplate) {
         this.repository = repository;
         this.mongoTemplate = mongoTemplate;
     }
 
-    public Flux<HazardEvent> getHazardEventsByBounds(TimeSearchBounds bounds) {
-        var activeCriteria = Criteria.where("status").is(BatchStatusType.ACTIVE);
-        var boundsCriteria = Criteria.where("items").elemMatch(
-            Criteria.where("startTime").gte(bounds.getTimeMin()).lt(bounds.getTimeMax())
-        );
-
-        Query query = new Query();
-        query.addCriteria(activeCriteria.andOperator(boundsCriteria));
-
-        return mongoTemplate.findOne(query, HazardEventBatch.class)
+    public Flux<DisasterEvent> getDisasterEventsByBounds(TimeSearchBounds bounds) {
+        return repository.findAllByTopBound(bounds.getTimeMin())
             .doOnNext((res) -> log.info("Found " + res.getItems().size() + " disasters"))
-            .flatMapIterable(HazardEventBatch::getItems);
+            .flatMapIterable(DisasterEventBatch::getItems);
     }
 
-    public Mono<UpdateResult> saveHazardEventsBatch(List<HazardEvent> events) {
+    public Mono<UpdateResult> saveDisasterEventsBatch(List<DisasterEvent> events) {
         Query query = buildPendingBatchQuery();
         Update eventsUpdate = new Update();
         eventsUpdate.push("items").each(events);
 
-        return mongoTemplate.updateFirst(query, eventsUpdate, HazardEventBatch.class)
+        return mongoTemplate.updateFirst(query, eventsUpdate, DisasterEventBatch.class)
             .doOnNext((res) -> log.info("Added " + events.size() + " events to batch"));
     }
 
-    public Mono<HazardEventBatch> createNewBatch() {
+    public Mono<DisasterEventBatch> createNewBatch() {
         var nowTimestamp = LocalDateTime.now();
 
-        var batch = new HazardEventBatch();
+        var batch = new DisasterEventBatch();
         batch.setItems(List.of());
         batch.setStatus(BatchStatusType.PENDING);
         batch.setCreatedAt(nowTimestamp);
@@ -79,7 +70,7 @@ public class HazardEventDao {
         Update batchUpdate = new Update();
         batchUpdate.set("status", BatchStatusType.ACTIVE);
 
-        return mongoTemplate.updateFirst(query, batchUpdate, HazardEventBatch.class)
+        return mongoTemplate.updateFirst(query, batchUpdate, DisasterEventBatch.class)
             .doOnNext((res) -> log.info("Set latest batch as active"));
     }
 
@@ -88,7 +79,7 @@ public class HazardEventDao {
         query.addCriteria(Criteria.where("status").is(BatchStatusType.ACTIVE));
         Update batchUpdate = new Update();
         batchUpdate.set("status", BatchStatusType.DISABLED);
-        return mongoTemplate.updateMulti(query, batchUpdate, HazardEventBatch.class)
+        return mongoTemplate.updateMulti(query, batchUpdate, DisasterEventBatch.class)
             .doOnNext((res) -> log.info("Set all batches to " + BatchStatusType.DISABLED));
     }
 

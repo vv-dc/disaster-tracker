@@ -1,11 +1,12 @@
-package disaster.module.hazard.eonet;
+package disaster.module.disaster.eonet;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import disaster.config.DisasterApiConfig;
-import disaster.model.disasters.HazardEvent;
-import disaster.model.disasters.HazardEventApiDto;
+import disaster.model.disaster.DisasterEvent;
+import disaster.model.disaster.DisasterEventRawDto;
+import disaster.model.disaster.DisasterEventSource;
 import disaster.model.geocoding.SuccessGeocodingResult;
 import disaster.model.mappers.EonetHazardEventDeserializer;
 import disaster.service.geocoding.OpenStreetMapGeolocationService;
@@ -19,7 +20,7 @@ import java.net.URI;
 @Service
 public class EonetApiClient {
 
-    public static final WebClient webclient = WebClient.create();
+    private final WebClient webclient = WebClient.create();
     private final ObjectMapper mapper;
     private final DisasterApiConfig disasterApiConfig;
     private final OpenStreetMapGeolocationService geolocationService;
@@ -30,11 +31,11 @@ public class EonetApiClient {
         this.geolocationService = geolocationService;
         this.mapper = new ObjectMapper();
         SimpleModule module = new SimpleModule();
-        module.addDeserializer(HazardEventApiDto.class, new EonetHazardEventDeserializer());
+        module.addDeserializer(DisasterEventRawDto.class, new EonetHazardEventDeserializer());
         this.mapper.registerModule(module);
     }
 
-    public Flux<HazardEvent> getEvents() {
+    public Flux<DisasterEvent> getEvents() {
         var uri = buildUri("open");
         return webclient.get()
             .uri(uri)
@@ -44,7 +45,7 @@ public class EonetApiClient {
                 body -> {
                     try {
                         var jsonNode = mapper.readTree(body);
-                        return Flux.fromArray(mapper.readValue(jsonNode.get("events").toString(), HazardEventApiDto[].class)
+                        return Flux.fromArray(mapper.readValue(jsonNode.get("events").toString(), DisasterEventRawDto[].class)
                         );
                     } catch (JsonProcessingException e) {
                         return Flux.error(e);
@@ -54,7 +55,7 @@ public class EonetApiClient {
                 .locate(dto.getLatitude(), dto.getLongitude())
                 .handle((location, s) -> {
                     if (location instanceof SuccessGeocodingResult) {
-                        s.next(HazardEvent.fromDto(dto, location));
+                        s.next(DisasterEvent.fromDto(dto, location, DisasterEventSource.EONET));
                     }
                 })
             );

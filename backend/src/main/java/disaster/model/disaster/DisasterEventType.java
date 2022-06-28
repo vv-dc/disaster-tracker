@@ -1,6 +1,6 @@
-package disaster.model.disasters;
+package disaster.model.disaster;
 
-public enum HazardEventType {
+public enum DisasterEventType {
     UNKNOWN,
     VOLCANO,
     STORM,
