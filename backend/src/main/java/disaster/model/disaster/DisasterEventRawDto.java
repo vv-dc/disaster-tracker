@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class DisasterEventRawDto {
-    private DisasterEventType hazardType;
+    private HazardEventType hazardType;
     private String startTime;
     private double longitude;
     private double latitude;

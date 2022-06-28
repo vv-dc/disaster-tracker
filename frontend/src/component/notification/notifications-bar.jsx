@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import styled from 'styled-components';
 import { NotificationsSearchForm } from './notifications-search-form';
 import { NotificationsTextArea } from './notifications-text-area';
@@ -10,6 +10,9 @@ import { BaseButton } from '../styled/control';
 import { ErrorBlock } from '../styled/error';
 
 export const NotificationsBar = () => {
+  const [integrity, setIntegrity] = useState(null);
+  const integrityRef = useRef(integrity);
+
   const [error, setError] = useState(null);
   const [notifications, setNotifications] = useState([]);
   const [stream, setStream] = useState(null);
@@ -19,8 +22,16 @@ export const NotificationsBar = () => {
     setStream(null);
   };
 
+  const updateIntegrity = (value) => {
+    integrityRef.current = value;
+    setIntegrity(value);
+  };
+
   const addNotification = (notification) => {
-    setNotifications((prev) => [...prev, notification]);
+    if (integrityRef.current !== notification.integrity) {
+      updateIntegrity(notification.integrity);
+      setNotifications([notification]);
+    } else setNotifications((prev) => [...prev, notification]);
   };
 
   const handleEnableStream = (searchDto) => {
@@ -59,7 +70,7 @@ export const NotificationsBar = () => {
           Disconnect
         </BaseButton>
       ) : null}
-      <NotificationTextAreaWrapper>
+      <NotificationTextAreaWrapper key={integrityRef.current}>
         <NotificationsTextArea notifications={notifications} />
       </NotificationTextAreaWrapper>
     </NotificationsBarWrapper>

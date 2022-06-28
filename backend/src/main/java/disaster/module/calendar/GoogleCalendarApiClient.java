@@ -2,6 +2,7 @@ package disaster.module.calendar;
 
 import disaster.config.CalendarConfig;
 import disaster.model.calendar.CalendarEvent;
+import disaster.model.calendar.google.GoogleCalendarRawDate;
 import disaster.model.calendar.google.GoogleCalendarRawEvent;
 import disaster.model.common.TimeSearchBounds;
 import disaster.model.calendar.CalendarSearchDto;
@@ -77,8 +78,8 @@ public class GoogleCalendarApiClient {
     }
 
     private CalendarEvent mapRawToCalendarEvent(GoogleCalendarRawEvent rawEvent) {
-        var start = rawEvent.getStart();
-        var end  = rawEvent.getEnd();
+        var start = coalesceDateTime(rawEvent.getStart());
+        var end  = coalesceDateTime(rawEvent.getEnd());
         return CalendarEvent.builder()
             .id(rawEvent.getId())
             .eventType(rawEvent.getEventType())
@@ -89,5 +90,12 @@ public class GoogleCalendarApiClient {
             .start(DateTimeUtils.toLocalFromZoned(start.getDateTime(), start.getTimeZone()))
             .end(DateTimeUtils.toLocalFromZoned(end.getDateTime(), end.getTimeZone()))
             .build();
+    }
+
+    private GoogleCalendarRawDate coalesceDateTime(GoogleCalendarRawDate rawDate) {
+        if (rawDate.getDateTime() == null) {
+            rawDate.setDateTime(DateTimeUtils.dateToZoned(rawDate.getDate()));
+        }
+        return rawDate;
     }
 }

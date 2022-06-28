@@ -28,8 +28,11 @@ public class NotificationService {
         return getEventTypeStream()
             .flatMap((eventType) -> disasterEventService.getDisasterEventsByBounds(searchDto.getTimeBounds())
                 .collectList()
-                .flatMapMany((lst) -> getCalendarEventsByEventType(eventType, searchDto)
-                    .flatMap((event) -> this.mapNotifications(event, lst))
+                .flatMapMany((lst) -> {
+                    var integrity = generateIntegrity();
+                    return getCalendarEventsByEventType(eventType, searchDto)
+                            .flatMap((event) -> this.mapNotifications(event, lst, integrity));
+                    }
                 )
             );
     }
@@ -50,8 +53,7 @@ public class NotificationService {
         return Flux.empty();
     }
 
-    private Mono<DisasterNotification> mapNotifications(CalendarEvent calendarEvent, List<DisasterEvent> disasters) {
-        var integrity = UUID.randomUUID().toString();
+    private Mono<DisasterNotification> mapNotifications(CalendarEvent calendarEvent, List<DisasterEvent> disasters, String integrity) {
         return Flux.fromIterable(disasters)
             .filter((disaster) -> Objects.equals(disaster.getLocation(), calendarEvent.getLocation()))
             .collectList()
@@ -61,9 +63,13 @@ public class NotificationService {
 
     private Flux<DisasterUpdateEventType> getEventTypeStream() {
         return Flux.merge(
-            Flux.interval(Duration.ZERO, Duration.ofMinutes(1))
+            Flux.interval(Duration.ZERO, Duration.ofMinutes(10))
                     .map((i) -> DisasterUpdateEventType.CALENDAR_INTERVAL_EVENT),
             disasterEventService.getEventFlux()
         );
+    }
+
+    private String generateIntegrity() {
+        return UUID.randomUUID().toString();
     }
 }

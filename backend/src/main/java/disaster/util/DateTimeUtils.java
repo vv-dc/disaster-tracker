@@ -3,6 +3,7 @@ package disaster.util;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.Date;
 
 public class DateTimeUtils {
     private static final ZoneId zoneId = ZoneId.of("UTC");
@@ -28,7 +29,11 @@ public class DateTimeUtils {
     }
 
     public static LocalDateTime toLocalFromZoned(ZonedDateTime dateTime, String timeZone) {
-        var zoneId = ZoneId.of(timeZone);
+        var zoneId = ZoneId.of(timeZone != null ? timeZone : "UTC");
         return dateTime.withZoneSameInstant(zoneId).toLocalDateTime();
+    }
+
+    public static ZonedDateTime dateToZoned(Date date) {
+        return ZonedDateTime.ofInstant(date.toInstant(), zoneId);
     }
 }

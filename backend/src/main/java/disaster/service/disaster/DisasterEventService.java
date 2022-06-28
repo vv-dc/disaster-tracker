@@ -29,8 +29,7 @@ public class DisasterEventService {
     ) {
         this.eventsProvider = eventsProvider;
         this.eventDao = eventDao;
-        this.batchUpdateSink = Sinks.many().replay().all();
-//        this.initEventsUpdate().subscribe();
+        this.batchUpdateSink = Sinks.many().multicast().directAllOrNothing();
     }
 
     public Flux<DisasterUpdateEventType> getEventFlux() {
@@ -41,8 +40,8 @@ public class DisasterEventService {
         return eventDao.getDisasterEventsByBounds(bounds);
     }
 
-    private Mono<Void> initEventsUpdate() {
-        return Flux.interval(Duration.ZERO, Duration.ofMinutes(2))
+    public Mono<Void> initEventsUpdate() {
+        return Flux.interval(Duration.ZERO, Duration.ofMinutes(10))
             .concatMap((flux) ->
                 eventDao.createNewBatch()
                     .then(Mono.defer(this::handleEvents))

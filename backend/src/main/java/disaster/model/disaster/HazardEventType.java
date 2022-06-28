@@ -1,6 +1,6 @@
 package disaster.model.disaster;
 
-public enum DisasterEventType {
+public enum HazardEventType {
     UNKNOWN,
     VOLCANO,
     STORM,
@@ -9,5 +9,8 @@ public enum DisasterEventType {
     FLOOD,
     BIOMEDICAL,
     LANDSLIDE,
-    WILDFIRE
+    WILDFIRE,
+    CYCLONE,
+    WINTERSTORM,
+    EXTREMETEMPERATURE
 }

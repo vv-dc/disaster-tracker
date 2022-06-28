@@ -6,10 +6,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import disaster.model.disaster.DisasterEvent;
 import disaster.model.disaster.DisasterEventRawDto;
-import disaster.model.disaster.DisasterEventType;
+import disaster.model.disaster.HazardEventType;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 
+@Slf4j
 public class DisasterAlertHazardEventDeserializer extends StdDeserializer<DisasterEventRawDto> {
 
     public DisasterAlertHazardEventDeserializer() {
@@ -37,11 +39,12 @@ public class DisasterAlertHazardEventDeserializer extends StdDeserializer<Disast
         return hazardEvent;
     }
 
-    private DisasterEventType getHazardEventType(String string) {
+    private HazardEventType getHazardEventType(String string) {
         try {
-            return DisasterEventType.valueOf(string);
+            return HazardEventType.valueOf(string);
         } catch (IllegalArgumentException ex) {
-            return DisasterEventType.UNKNOWN;
+            log.warn("Unable to match hazardType: " + string);
+            return HazardEventType.UNKNOWN;
         }
     }
 }
