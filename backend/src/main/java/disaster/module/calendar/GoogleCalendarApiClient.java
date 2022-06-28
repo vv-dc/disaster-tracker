@@ -2,11 +2,13 @@ package disaster.module.calendar;
 
 import disaster.config.CalendarConfig;
 import disaster.model.calendar.CalendarEvent;
-import disaster.model.calendar.CalendarSearchBounds;
 import disaster.model.calendar.CalendarSearchDto;
 import disaster.model.calendar.error.CalendarGenericHttpError;
 import disaster.model.calendar.google.GoogleApiErrorWrapper;
 import disaster.model.calendar.google.GoogleCalendarEventsList;
+import disaster.model.calendar.google.GoogleCalendarRawDate;
+import disaster.model.calendar.google.GoogleCalendarRawEvent;
+import disaster.model.common.TimeSearchBounds;
 import disaster.util.DateTimeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -44,16 +46,16 @@ public class GoogleCalendarApiClient {
             .retrieve()
             .onStatus(HttpStatus::isError, this::handleApiError)
             .bodyToMono(GoogleCalendarEventsList.class)
-            .flatMapIterable(GoogleCalendarEventsList::getItems);
+            .flatMapIterable(GoogleCalendarEventsList::getItems)
+            .map(this::mapRawToCalendarEvent);
     }
 
-    private URI buildUrlWithBounds(String calendarId, CalendarSearchBounds bounds) {
+    private URI buildUrlWithBounds(String calendarId, TimeSearchBounds bounds) {
         String baseUrl = buildBaseApiUrl(calendarId);
         return UriComponentsBuilder
             .fromHttpUrl(baseUrl)
             .queryParam("timeMin", DateTimeUtils.formatToISODateTime(bounds.getTimeMin()))
             .queryParam("timeMax", DateTimeUtils.formatToISODateTime(bounds.getTimeMax()))
-            .queryParam("timeZone", bounds.getTimeMax().getZone())
             .build()
             .toUri();
     }
@@ -73,5 +75,27 @@ public class GoogleCalendarApiClient {
                 wrapper.getError().getStatus(),
                 wrapper.getError().getMessage()
             ));
+    }
+
+    private CalendarEvent mapRawToCalendarEvent(GoogleCalendarRawEvent rawEvent) {
+        var start = coalesceDateTime(rawEvent.getStart());
+        var end = coalesceDateTime(rawEvent.getEnd());
+        return CalendarEvent.builder()
+            .id(rawEvent.getId())
+            .eventType(rawEvent.getEventType())
+            .status(rawEvent.getStatus())
+            .htmlLink(rawEvent.getHtmlLink())
+            .summary(rawEvent.getSummary())
+            .location(rawEvent.getLocation())
+            .start(DateTimeUtils.toLocalFromZoned(start.getDateTime(), start.getTimeZone()))
+            .end(DateTimeUtils.toLocalFromZoned(end.getDateTime(), end.getTimeZone()))
+            .build();
+    }
+
+    private GoogleCalendarRawDate coalesceDateTime(GoogleCalendarRawDate rawDate) {
+        if (rawDate.getDateTime() == null) {
+            rawDate.setDateTime(DateTimeUtils.dateToZoned(rawDate.getDate()));
+        }
+        return rawDate;
     }
 }

@@ -1,13 +1,9 @@
-package disaster.model.calendar;
+package disaster.model.calendar.google;
 
-import lombok.Builder;
 import lombok.Data;
 
-import java.time.LocalDateTime;
-
 @Data
-@Builder
-public class CalendarEvent {
+public class GoogleCalendarRawEvent {
 
     private String id;
     private String eventType;
@@ -15,6 +11,6 @@ public class CalendarEvent {
     private String htmlLink;
     private String summary;
     private String location;
-    private LocalDateTime start;
-    private LocalDateTime end;
+    private GoogleCalendarRawDate start;
+    private GoogleCalendarRawDate end;
 }

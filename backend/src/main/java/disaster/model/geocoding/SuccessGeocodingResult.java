@@ -4,5 +4,6 @@ import lombok.Data;
 
 @Data
 public class SuccessGeocodingResult extends GeocodingResult {
+
     private String name;
 }

@@ -9,6 +9,7 @@ import disaster.model.geocoding.GeocodingResult;
 import java.io.IOException;
 
 public class OpenStreetMapGeocodeResultDeserializer extends StdDeserializer<GeocodingResult> {
+
     public OpenStreetMapGeocodeResultDeserializer() {
         this(null);
     }
