@@ -25,10 +25,11 @@ public class HazardEventsProvider {
     }
 
     public Flux<HazardEvent> composeHazardEvents() {
-        return Flux.merge(
-               disasterAlertApiClient.getEvents(),
-               eonetApiClient.getEvents()
-            )
-            .log();
+        return Flux.empty();
+//        return Flux.merge(
+//               disasterAlertApiClient.getEvents(),
+//               eonetApiClient.getEvents()
+//            )
+//            .log();
     }
 }

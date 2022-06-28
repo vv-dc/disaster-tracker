@@ -10,6 +10,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import reactor.core.publisher.Flux;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Document(collection = "CalendarEvent")
 @Data
@@ -18,10 +19,10 @@ public class CalendarEventBatch {
     @Id
     private String id;
 
-    @Indexed
+    @Indexed(unique = true)
     private String calendarId;
 
-    private Flux<CalendarEvent> items;
+    private List<CalendarEvent> items;
 
     @CreatedDate
     private LocalDateTime createdAt;

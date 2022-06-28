@@ -1,6 +1,8 @@
 package disaster.service.disaster;
 
-import disaster.dao.HazardEventDao;
+import disaster.dao.hazard.HazardEventDao;
+import disaster.model.calendar.CalendarEvent;
+import disaster.model.disasters.HazardEvent;
 import disaster.module.event.DisasterEventType;
 import disaster.module.hazard.HazardEventsProvider;
 import lombok.extern.slf4j.Slf4j;
@@ -10,6 +12,7 @@ import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
 
 import java.time.Duration;
+import java.time.LocalTime;
 
 @Service
 @Slf4j
@@ -35,8 +38,15 @@ public class DisasterService {
         return batchUpdateSink.asFlux();
     }
 
+    public Flux<HazardEvent> getDisastersByCalendarEvents(Flux<CalendarEvent> calendarEvents) {
+        calendarEvents.subscribe();
+        var event = new HazardEvent();
+        event.setStartTime(LocalTime.now().toString());
+        return Flux.just(event);
+    }
+
     private Mono<Void> initEvents() {
-        return Flux.interval(Duration.ZERO, Duration.ofMinutes(1))
+        return Flux.interval(Duration.ZERO, Duration.ofMinutes(10))
             .concatMap((flux) ->
                 eventDao.createNewBatch()
                     .then(Mono.defer(this::handleEvents))

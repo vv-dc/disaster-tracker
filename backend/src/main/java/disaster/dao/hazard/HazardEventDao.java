@@ -1,4 +1,4 @@
-package disaster.dao;
+package disaster.dao.hazard;
 
 import com.mongodb.client.result.UpdateResult;
 import disaster.model.disasters.HazardEvent;
@@ -10,6 +10,7 @@ import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
@@ -17,7 +18,7 @@ import reactor.core.publisher.Mono;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Service
+@Repository
 @Slf4j
 public class HazardEventDao {
 
