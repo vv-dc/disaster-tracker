@@ -2,13 +2,13 @@ package disaster.module.calendar;
 
 import disaster.config.CalendarConfig;
 import disaster.model.calendar.CalendarEvent;
-import disaster.model.calendar.google.GoogleCalendarRawDate;
-import disaster.model.calendar.google.GoogleCalendarRawEvent;
-import disaster.model.common.TimeSearchBounds;
 import disaster.model.calendar.CalendarSearchDto;
 import disaster.model.calendar.error.CalendarGenericHttpError;
 import disaster.model.calendar.google.GoogleApiErrorWrapper;
 import disaster.model.calendar.google.GoogleCalendarEventsList;
+import disaster.model.calendar.google.GoogleCalendarRawDate;
+import disaster.model.calendar.google.GoogleCalendarRawEvent;
+import disaster.model.common.TimeSearchBounds;
 import disaster.util.DateTimeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -79,7 +79,7 @@ public class GoogleCalendarApiClient {
 
     private CalendarEvent mapRawToCalendarEvent(GoogleCalendarRawEvent rawEvent) {
         var start = coalesceDateTime(rawEvent.getStart());
-        var end  = coalesceDateTime(rawEvent.getEnd());
+        var end = coalesceDateTime(rawEvent.getEnd());
         return CalendarEvent.builder()
             .id(rawEvent.getId())
             .eventType(rawEvent.getEventType())

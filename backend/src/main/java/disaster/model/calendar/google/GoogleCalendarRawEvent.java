@@ -4,6 +4,7 @@ import lombok.Data;
 
 @Data
 public class GoogleCalendarRawEvent {
+
     private String id;
     private String eventType;
     private String status;

@@ -22,8 +22,8 @@ import java.net.URI;
 public class DisasterAlertApiClient {
 
     public static final WebClient webclient = WebClient.builder()
-            .defaultHeader("Accept", MediaType.APPLICATION_XML_VALUE)
-            .build();
+        .defaultHeader("Accept", MediaType.APPLICATION_XML_VALUE)
+        .build();
 
     private final XmlMapper mapper;
     private final OpenStreetMapGeolocationService geolocationService;
@@ -42,34 +42,34 @@ public class DisasterAlertApiClient {
     public Flux<DisasterEvent> getEvents() {
         var uri = buildUri();
         return webclient.get()
-                .uri(uri)
-                .retrieve()
-                .bodyToMono(String.class)
-                .flatMapMany(body -> {
-                            try {
-                                return Flux.fromArray(mapper.readValue(body, DisasterEventRawDto[].class)
-                                );
-                            } catch (JsonProcessingException e) {
-                                return Flux.error(e);
-                            }
-                        }
-                )
-                .concatMap(dto -> geolocationService
-                        .locate(dto.getLatitude(), dto.getLongitude())
-                        .handle((location, s) -> {
-                            if (location instanceof SuccessGeocodingResult) {
-                                var fixedDate = dto.getStartTime().substring(0, 19) + "Z";
-                                dto.setStartTime(fixedDate);
-                                s.next(DisasterEvent.fromDto(dto, location, DisasterEventSource.DISASTER_ALERT));
-                            }
-                        })
-                );
+            .uri(uri)
+            .retrieve()
+            .bodyToMono(String.class)
+            .flatMapMany(body -> {
+                    try {
+                        return Flux.fromArray(mapper.readValue(body, DisasterEventRawDto[].class)
+                        );
+                    } catch (JsonProcessingException e) {
+                        return Flux.error(e);
+                    }
+                }
+            )
+            .concatMap(dto -> geolocationService
+                .locate(dto.getLatitude(), dto.getLongitude())
+                .handle((location, s) -> {
+                    if (location instanceof SuccessGeocodingResult) {
+                        var fixedDate = dto.getStartTime().substring(0, 19) + "Z";
+                        dto.setStartTime(fixedDate);
+                        s.next(DisasterEvent.fromDto(dto, location, DisasterEventSource.DISASTER_ALERT));
+                    }
+                })
+            );
     }
 
     private URI buildUri() {
         return UriComponentsBuilder
-                .fromHttpUrl(disasterApiConfig.getDisasterAlertApiUrl())
-                .build()
-                .toUri();
+            .fromHttpUrl(disasterApiConfig.getDisasterAlertApiUrl())
+            .build()
+            .toUri();
     }
 }

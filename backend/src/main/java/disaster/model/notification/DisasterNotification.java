@@ -10,6 +10,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 public class DisasterNotification {
+
     private String integrity;
     private CalendarEvent calendarEvent;
     private List<DisasterEvent> disasterEvents;

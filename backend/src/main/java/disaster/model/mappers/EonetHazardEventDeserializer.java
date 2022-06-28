@@ -14,13 +14,13 @@ import java.util.Map;
 public class EonetHazardEventDeserializer extends StdDeserializer<DisasterEventRawDto> {
 
     private final Map<String, HazardEventType> hazardEventTypeMap = Map.of(
-            "drought", HazardEventType.DROUGHT,
-            "earthquakes", HazardEventType.EARTHQUAKE,
-            "floods", HazardEventType.FLOOD,
-            "landslides", HazardEventType.LANDSLIDE,
-            "severe storms", HazardEventType.STORM,
-            "volcanoes", HazardEventType.VOLCANO,
-            "wildfires", HazardEventType.WILDFIRE
+        "drought", HazardEventType.DROUGHT,
+        "earthquakes", HazardEventType.EARTHQUAKE,
+        "floods", HazardEventType.FLOOD,
+        "landslides", HazardEventType.LANDSLIDE,
+        "severe storms", HazardEventType.STORM,
+        "volcanoes", HazardEventType.VOLCANO,
+        "wildfires", HazardEventType.WILDFIRE
     );
 
     public EonetHazardEventDeserializer() {
@@ -34,7 +34,6 @@ public class EonetHazardEventDeserializer extends StdDeserializer<DisasterEventR
     @Override
     public DisasterEventRawDto deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
         JsonNode node = p.getCodec().readTree(p);
-
 
         var type = getHazardEventType(node.get("categories").get(0).get("title").textValue());
         var geometryNode = node.get("geometry").get(0);
@@ -52,8 +51,9 @@ public class EonetHazardEventDeserializer extends StdDeserializer<DisasterEventR
 
     private HazardEventType getHazardEventType(String string) {
         var key = string.toLowerCase(Locale.ROOT);
-        if (hazardEventTypeMap.containsKey(key))
+        if (hazardEventTypeMap.containsKey(key)) {
             return hazardEventTypeMap.get(key);
+        }
         return HazardEventType.UNKNOWN;
     }
 }

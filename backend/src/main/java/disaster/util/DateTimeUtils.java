@@ -6,6 +6,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Date;
 
 public class DateTimeUtils {
+
     private static final ZoneId zoneId = ZoneId.of("UTC");
     private static final ZoneOffset zoneOffset = ZoneOffset.UTC;
 

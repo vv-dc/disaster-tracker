@@ -3,8 +3,8 @@ package disaster.service.notification;
 import disaster.model.calendar.CalendarEvent;
 import disaster.model.calendar.CalendarSearchDto;
 import disaster.model.disaster.DisasterEvent;
-import disaster.model.notification.DisasterNotification;
 import disaster.model.disaster.DisasterUpdateEventType;
+import disaster.model.notification.DisasterNotification;
 import disaster.service.calendar.GoogleCalendarService;
 import disaster.service.disaster.DisasterEventService;
 import lombok.AllArgsConstructor;
@@ -29,8 +29,8 @@ public class NotificationService {
             .flatMap((eventType) -> disasterEventService.getDisasterEventsByBounds(searchDto.getTimeBounds())
                 .collectList()
                 .flatMapMany((lst) -> {
-                    var integrity = generateIntegrity();
-                    return getCalendarEventsByEventType(eventType, searchDto)
+                        var integrity = generateIntegrity();
+                        return getCalendarEventsByEventType(eventType, searchDto)
                             .flatMap((event) -> this.mapNotifications(event, lst, integrity));
                     }
                 )
@@ -64,7 +64,7 @@ public class NotificationService {
     private Flux<DisasterUpdateEventType> getEventTypeStream() {
         return Flux.merge(
             Flux.interval(Duration.ZERO, Duration.ofMinutes(10))
-                    .map((i) -> DisasterUpdateEventType.CALENDAR_INTERVAL_EVENT),
+                .map((i) -> DisasterUpdateEventType.CALENDAR_INTERVAL_EVENT),
             disasterEventService.getEventFlux()
         );
     }

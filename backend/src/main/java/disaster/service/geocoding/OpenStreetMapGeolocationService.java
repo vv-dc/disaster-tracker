@@ -18,6 +18,7 @@ import java.text.DecimalFormat;
 @Service
 @Slf4j
 public class OpenStreetMapGeolocationService {
+
     private static final DecimalFormat df = new DecimalFormat("#.###");
 
     private final WebClient webclient = WebClient.create();
@@ -35,27 +36,27 @@ public class OpenStreetMapGeolocationService {
     public Mono<GeocodingResult> locate(double latitude, double longitude) {
         var uri = buildUri(latitude, longitude);
         return webclient.get()
-                .uri(uri)
-                .retrieve()
-                .bodyToMono(String.class)
-                .map(body -> {
-                    try {
-                        return mapper.readValue(body, GeocodingResult.class);
-                    } catch (JsonProcessingException e) {
-                        log.info("Unable to geocode: (" + latitude + ", " + longitude + ")");
-                        return GeocodingResult.error(e.getMessage());
-                    }
-                });
+            .uri(uri)
+            .retrieve()
+            .bodyToMono(String.class)
+            .map(body -> {
+                try {
+                    return mapper.readValue(body, GeocodingResult.class);
+                } catch (JsonProcessingException e) {
+                    log.info("Unable to geocode: (" + latitude + ", " + longitude + ")");
+                    return GeocodingResult.error(e.getMessage());
+                }
+            });
     }
 
     private URI buildUri(double latitude, double longitude) {
         return UriComponentsBuilder
-                .fromHttpUrl(disasterApiConfig.getOpenStreetMapApiUrl())
-                .queryParam("format", "json")
-                .queryParam("lat", df.format(latitude))
-                .queryParam("lon", df.format(longitude))
-                .queryParam("accept-language", "en")
-                .build()
-                .toUri();
+            .fromHttpUrl(disasterApiConfig.getOpenStreetMapApiUrl())
+            .queryParam("format", "json")
+            .queryParam("lat", df.format(latitude))
+            .queryParam("lon", df.format(longitude))
+            .queryParam("accept-language", "en")
+            .build()
+            .toUri();
     }
 }

@@ -26,8 +26,8 @@ public class DisasterEventsProvider {
 
     public Flux<DisasterEvent> composeHazardEvents() {
         return Flux.merge(
-               disasterAlertApiClient.getEvents(),
-               eonetApiClient.getEvents()
+                disasterAlertApiClient.getEvents(),
+                eonetApiClient.getEvents()
             )
             .log();
     }
