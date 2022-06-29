@@ -42,7 +42,7 @@ public class GoogleCalendarApiClient {
         return webClient
             .get()
             .uri(searchURI)
-            .header("Authorization", searchDto.getAccessToken())
+            .header("Authorization", "Bearer " + searchDto.getAccessToken())
             .retrieve()
             .onStatus(HttpStatus::isError, this::handleApiError)
             .bodyToMono(GoogleCalendarEventsList.class)

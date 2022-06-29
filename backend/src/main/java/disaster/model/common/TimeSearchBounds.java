@@ -1,11 +1,13 @@
 package disaster.model.common;
 
 import disaster.util.DateTimeUtils;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.time.LocalDateTime;
 
 @Data
+@AllArgsConstructor
 public class TimeSearchBounds {
 
     private LocalDateTime timeMin; // kebab-case

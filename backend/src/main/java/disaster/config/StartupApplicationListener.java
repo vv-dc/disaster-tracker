@@ -1,6 +1,7 @@
 package disaster.config;
 
 import disaster.service.disaster.DisasterEventService;
+import disaster.service.disaster.impl.DefaultDisasterEventService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -14,7 +15,7 @@ public class StartupApplicationListener implements ApplicationListener<ContextRe
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
-        disasterEventService.initEventsUpdate().subscribe(); // update disasters in DB
+        disasterEventService.initDisasterEventsUpdate().subscribe(); // update disasters in DB
         // TODO: add statistics
     }
 }
