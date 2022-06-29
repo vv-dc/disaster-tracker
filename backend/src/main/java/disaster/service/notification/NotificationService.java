@@ -6,5 +6,6 @@ import disaster.model.notification.DisasterNotification;
 import reactor.core.publisher.Flux;
 
 public interface NotificationService {
+
     Flux<DisasterNotification> getNotificationsBySearchDto(CalendarSearchDto searchDto);
 }

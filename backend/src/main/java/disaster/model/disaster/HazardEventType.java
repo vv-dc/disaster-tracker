@@ -12,5 +12,6 @@ public enum HazardEventType {
     WILDFIRE,
     CYCLONE,
     WINTERSTORM,
-    EXTREMETEMPERATURE
+    EXTREMETEMPERATURE,
+    HOTTEST_POINT,
 }

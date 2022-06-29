@@ -17,6 +17,7 @@ public class DisasterEvent {
     private double longitude;
     private double latitude;
     private String location;
+    private String description;
     private DisasterEventSource source;
 
     public static DisasterEvent fromDto(DisasterEventRawDto dto, GeocodingResult location, DisasterEventSource source) {
@@ -27,6 +28,7 @@ public class DisasterEvent {
             .hazardType(dto.getHazardType())
             .startTime(DateTimeUtils.parseToLocal(dto.getStartTime()))
             .location(((SuccessGeocodingResult) location).getName())
+            .description(null)
             .build();
     }
 }

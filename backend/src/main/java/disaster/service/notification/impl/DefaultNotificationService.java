@@ -2,12 +2,13 @@ package disaster.service.notification.impl;
 
 import disaster.model.calendar.CalendarEvent;
 import disaster.model.calendar.CalendarSearchDto;
-import disaster.model.notification.NotificationUpdateReason;
 import disaster.model.disaster.DisasterEvent;
 import disaster.model.notification.DisasterNotification;
+import disaster.model.notification.NotificationUpdateReason;
 import disaster.service.calendar.CalendarEventService;
 import disaster.service.disaster.DisasterEventService;
 import disaster.service.notification.NotificationService;
+import disaster.service.stats.FrequencyStatsService;
 import disaster.util.CryptoUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,13 +28,13 @@ public class DefaultNotificationService implements NotificationService {
     public Flux<DisasterNotification> getNotificationsBySearchDto(CalendarSearchDto searchDto) {
         return getUpdateReasonStream()
             .flatMap((eventType) -> disasterEventService.getDisasterEventsByBounds(searchDto.getTimeBounds())
-                    .collectList()
-                    .flatMapMany((lst) -> {
-                            String integrity = CryptoUtils.generateIntegrityId();
-                            return calendarEventsService.getCalendarEventsByUpdateReason(eventType, searchDto)
-                                .flatMap((event) -> mapNotifications(event, lst, integrity));
-                        }
-                    )
+                .collectList()
+                .flatMapMany((lst) -> {
+                        String integrity = CryptoUtils.generateIntegrityId();
+                        return calendarEventsService.getCalendarEventsByUpdateReason(eventType, searchDto)
+                            .flatMap((event) -> mapNotifications(event, lst, integrity));
+                    }
+                )
             );
     }
 
