@@ -7,6 +7,7 @@ import reactor.core.publisher.Flux;
 
 
 public interface CalendarEventService {
+
     Flux<CalendarEvent> getCalendarEventsByUpdateReason(NotificationUpdateReason reason, CalendarSearchDto searchDto);
 
     Flux<NotificationUpdateReason> getCalendarUpdateNotifier();
