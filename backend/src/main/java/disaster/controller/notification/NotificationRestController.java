@@ -30,9 +30,9 @@ public class NotificationRestController {
     ) {
         var searchDto = new CalendarSearchDto();
         searchDto.setCalendarId(calendarId);
-        searchDto.setAccessToken("Bearer " + accessToken);
+        searchDto.setAccessToken(accessToken);
         searchDto.setTimeBounds(new TimeSearchBounds(timeMin, timeMax));
 
-        return notificationService.getNotificationsStream(searchDto);
+        return notificationService.getNotificationsBySearchDto(searchDto);
     }
 }
